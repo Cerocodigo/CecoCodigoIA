@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Acceso{% endblock %} | CeCoCodigoIA</title>
+
+    <!-- ========================= -->
+    <!-- CSRF GLOBAL -->
+    <!-- ========================= -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <!-- ========================= -->
+    <!-- CSS compartido del sistema -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'shared/css/base.css' %}">
+
+    <!-- ========================= -->
+    <!-- Vendor GLOBAL compartido -->
+    <!-- ========================= -->
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="{% static 'shared/vendor/fontawesome/css/all.min.css' %}">
+
+    <!-- Google Fonts (CDN, decisión consciente) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900">
+
+    <!-- ========================= -->
+    <!-- Tema base (SB Admin 2) -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'core/vendor/sb-admin-2/css/sb-admin-2.min.css' %}">
+
+    <!-- ========================= -->
+    <!-- CSS propio de accounts -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+
+    {% block core_css %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+
+        <div class="row justify-content-center">
+
+            <div class="col-xl-10 col-lg-12 col-md-9">
+
+                <div class="card o-hidden border-0 shadow-lg my-5 auth-card">
+                    <div class="card-body p-0">
+
+                        <div class="row">
+
+                            <!-- ========================= -->
+                            <!-- Panel izquierdo / branding -->
+                            <!-- ========================= -->
+                            <div class="col-lg-6 d-none d-lg-flex auth-brand-panel">
+                                <div class="auth-brand-content">
+                                    <h1 class="h3 font-weight-bold">
+                                        <div class="sidebar-brand-icon rotate-n-15">
+                                            <i class="fas fa-laugh-wink"></i>
+                                        </div>
+                                        <div class="sidebar-brand-text mx-3">Cerocodigo<sup>ia</sup></div>
+                                    </h1>
+                                    <p class="mt-3">
+                                        Cerocodigo<br>
+                                        cero problemas
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- ========================= -->
+                            <!-- Panel derecho / contenido -->
+                            <!-- ========================= -->
+                            <div class="col-lg-6">
+                                <div class="p-5">
+
+                                    {% block content %}{% endblock %}
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Vendor JS (orden vital) -->
+    <!-- ========================= -->
+
+    <!-- jQuery -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- jQuery Easing -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS del tema base -->
+    <!-- ========================= -->
+    <script src="{% static 'core/vendor/sb-admin-2/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS compartido -->
+    <!-- ========================= -->
+    <script src="{% static 'shared/js/utils.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS propio accounts -->
+    <!-- ========================= -->
+    {% block core_js %}
+    <script src="{% static 'accounts/js/auth.js' %}"></script>
+    {% endblock %}
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

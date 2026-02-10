@@ -1,0 +1,134 @@
+{% extends "core/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+</div>
+
+<!-- Content Row -->
+<div class="row">
+
+    <!-- Usuarios -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Usuarios
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            0
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Módulos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Módulos Activos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            0
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-cubes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="row">
+
+    <!-- Estado de la empresa -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-body">
+                <div class="card-title text-uppercase text-muted small">
+                    Estado de la empresa
+                </div>
+
+                <div class="mt-3">
+                    <!-- Placeholder de estado -->
+                    <p class="mb-1">Empresa activa:</p>
+                    <strong>—</strong>
+
+                    <hr>
+
+                    <ul class="list-unstyled mb-0">
+                        <li>✔ Empresa creada</li>
+                        <li>⚠ Roles pendientes</li>
+                        <li>⏳ Modelos no definidos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actividad del sistema -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-body">
+                <div class="card-title text-uppercase text-muted small">
+                    Actividad del sistema
+                </div>
+
+                <div class="mt-3">
+                    <p class="mb-1">Última actividad:</p>
+                    <strong>—</strong>
+
+                    <hr>
+
+                    <ul class="list-unstyled mb-0">
+                        <li>Usuarios activos: —</li>
+                        <li>Modelos con datos: —</li>
+                        <li>Registros recientes: —</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones recomendadas -->
+    <div class="col-xl-4 col-md-12 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-body">
+                <div class="card-title text-uppercase text-muted small">
+                    Acciones recomendadas
+                </div>
+
+                <div class="mt-3">
+                    <ul class="list-unstyled mb-0">
+                        <li>→ Crear primer módulo</li>
+                        <li>→ Establecer modelo del primer módulo</li>
+                        <li>→ Invitar usuarios (cuando se habilite)</li>
+                        <li>→ Revisar configuración (cuando se plantee)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- End Content Row -->
+
+{% endblock %}

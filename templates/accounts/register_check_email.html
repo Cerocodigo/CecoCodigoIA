@@ -1,0 +1,38 @@
+{% extends "accounts/base_auth.html" %}
+{% load static %}
+
+{% block title %}Revisa tu correo{% endblock %}
+
+{% block content %}
+
+    <div class="text-center">
+
+        <div class="mb-4">
+            <i class="fas fa-envelope-open-text fa-3x text-primary"></i>
+        </div>
+
+        <h1 class="h4 text-gray-900 mb-3">
+            Revisa tu correo
+        </h1>
+
+        <p class="mb-2 text-gray-700">
+            Te hemos enviado un enlace de activación a tu correo electrónico.
+        </p>
+
+        <p class="mb-4 text-muted small">
+            Revisa también tu carpeta de spam.<br>
+            El enlace es válido por 24 horas.
+        </p>
+
+        <hr>
+
+        <div class="text-center">
+            <a class="small"
+               href="{% url 'accounts:login' %}">
+                Volver al inicio de sesión
+            </a>
+        </div>
+
+    </div>
+
+{% endblock %}

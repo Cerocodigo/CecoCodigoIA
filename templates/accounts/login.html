@@ -1,0 +1,64 @@
+{% extends "accounts/base_auth.html" %}
+{% load static %}
+
+{% block title %}CecoCodigoIA | Login{% endblock %}
+
+{% block content %}
+
+    <div class="text-center">
+        <h1 class="h4 text-gray-900 mb-4">
+            Ingreso al sistema
+        </h1>
+    </div>
+
+    {# Mensajes del sistema (errores, avisos) #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} text-center" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="user">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <input type="email"
+                   name="email"
+                   class="form-control form-control-user"
+                   placeholder="Correo electrónico"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <input type="password"
+                   name="password"
+                   class="form-control form-control-user"
+                   placeholder="Contraseña"
+                   required>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary btn-user btn-block">
+            Ingresar
+        </button>
+    </form>
+
+    <hr>
+
+    <div class="text-center">
+        <a class="small"
+           href="{% url 'accounts:password_reset_request' %}">
+            ¿Olvidaste tu contraseña?
+        </a>
+    </div>
+
+    <div class="text-center">
+        <a class="small"
+           href="{% url 'accounts:register_user' %}">
+            Crear una cuenta
+        </a>
+    </div>
+
+{% endblock %}
