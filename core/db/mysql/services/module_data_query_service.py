@@ -17,45 +17,86 @@ class ModuleDataQueryService:
     de un módulo desde MySQL.
     """
 
-    @staticmethod
-    def get_placeholder_data():
-        """
-        Datos temporales para UI cuando aún no hay tabla.
-        Retorna:
-            ([column_names], [rows])
-        """
-
-        column_names = [
-            "ColumnaA",
-            "ColumnaB",
-            "ColumnaC",
-            "ColumnaD",
-        ]
-
-        rows = [
-            ["Dato A1", "Dato B1", "Dato C1", "Dato D1"],
-            ["Dato A2", "Dato B2", "Dato C2", "Dato D2"],
-            ["Dato A3", "Dato B3", "Dato C3", "Dato D3"],
-        ]
-
-        return column_names, rows
+    # ==================================================
+    # Construcción ordenada de columnas según estándar
+    # ==================================================
 
     @staticmethod
-    def fetch_table_data(*, company, table_name: str, campos: list[dict]):
+    def build_ordered_column_list(campos: list[dict]) -> list[str]:
+        """
+        Construye lista de columnas SQL considerando:
+
+        - Siempre incluir id_*
+        - Solo incluir visible=True (excepto id)
+        - Ordenar primero area="main"
+        - Luego area="side"
+        - Orden ascendente por campo["orden"]
+        """
+
+        if not campos:
+            return []
+
+        main_fields = []
+        side_fields = []
+        id_field = None
+
+        for campo in campos:
+            nombre = campo.get("nombre")
+            area = campo.get("area")
+            visible = campo.get("visible", True)
+            orden = campo.get("orden", 0)
+
+            if nombre.lower().startswith("id_"):
+                id_field = nombre
+                continue
+
+            if not visible:
+                continue
+
+            if area == "main":
+                main_fields.append((orden, nombre))
+            elif area == "side":
+                side_fields.append((orden, nombre))
+
+        # Ordenar por orden ascendente
+        main_fields.sort(key=lambda x: x[0])
+        side_fields.sort(key=lambda x: x[0])
+
+        ordered_columns = []
+
+        # Siempre primero el ID si existe
+        if id_field:
+            ordered_columns.append(id_field)
+
+        # Luego main
+        ordered_columns.extend([nombre for _, nombre in main_fields])
+
+        # Luego side
+        ordered_columns.extend([nombre for _, nombre in side_fields])
+
+        return ordered_columns
+
+    # ==================================================
+    # Obtención principal
+    # ==================================================
+
+    @staticmethod
+    def fetch_table_data(*, company, table_name: str, campos: list[dict], limit: int = 1000):
         """
         Obtiene datos reales desde MySQL usando
         infraestructura oficial.
-
-        `campos` viene desde MongoDB.
         """
 
-        # =========================
-        # 1️⃣ Extraer nombres SQL
-        # =========================
         if not campos:
             return [], []
 
-        column_names = [campo["nombre"] for campo in campos]
+        # =========================
+        # 1️⃣ Construcción ordenada
+        # =========================
+        column_names = ModuleDataQueryService.build_ordered_column_list(campos)
+
+        if not column_names:
+            return [], []
 
         # =========================
         # 2️⃣ Infraestructura MySQL
@@ -78,4 +119,7 @@ class ModuleDataQueryService:
         # =========================
         # 4️⃣ Ejecutar estructurado
         # =========================
-        return dml.fetch_all_structured(sql, params)
+        return dml.fetch_all_structured(
+            sql + f" LIMIT {limit}",
+            params
+        )

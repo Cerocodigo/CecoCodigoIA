@@ -1,0 +1,17 @@
+#moduleTableFooter {
+    border-top: 1px solid #e3e6f0;
+    padding-top: 10px;
+}
+
+/* ==========================================
+   Control visual de headers DataTable
+========================================== */
+
+table.dataTable thead th {
+    white-space: nowrap;        /* Evita salto por espacios */
+    vertical-align: middle;     /* Centrado vertical */
+}
+
+table.dataTable thead th .dt-column-title {
+    white-space: nowrap;
+}

@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from core.db.mongo.services.modules.module_query_service import (ModuleQueryService)
 from core.db.mongo.services.models.model_query_service import (ModelQueryService)
-from core.services.update_model_mysql_schema_service import (UpdateModelMySQLSchemaService,)
+from core.services.modules.update_model_mysql_schema_service import (UpdateModelMySQLSchemaService,)
 
 @require_POST
 @csrf_protect

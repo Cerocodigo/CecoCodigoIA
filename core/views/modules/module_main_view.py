@@ -9,17 +9,13 @@ from django.http import Http404
 from core.db.sqlite.models.user import User
 from core.db.sqlite.models.user_company import UserCompany
 
-from core.db.mongo.services.modules.module_query_service import (
-    ModuleQueryService,
-)
-from core.db.mongo.services.models.model_query_service import (
-    ModelQueryService,
-)
+from core.db.mongo.services.modules.module_query_service import (ModuleQueryService,)
+from core.db.mongo.services.models.model_query_service import (ModelQueryService,)
 
-from core.db.mysql.services.module_data_query_service import (
-    ModuleDataQueryService,
-)
+from core.services.modules.module_table_data_service import (ModuleTableDataService,)
 
+#? Servicio de sincronización Mongo → MySQL (Desarrollo)
+from core.services.modules.update_model_mysql_schema_service import (UpdateModelMySQLSchemaService,)
 
 def module_main_view(request, module_id: str):
     """
@@ -41,6 +37,15 @@ def module_main_view(request, module_id: str):
         return redirect("accounts:login")
 
     company = request.company_ctx
+
+    #? =========================
+    #? Sincronización Mongo → MySQL (Desarrollo)
+    #? =========================
+    UpdateModelMySQLSchemaService.update_schema_for_model(
+            company=company,
+            model_id=module_id,
+        )
+
 
     # =========================
     # Obtener módulo (Mongo)
@@ -64,12 +69,18 @@ def module_main_view(request, module_id: str):
     # =========================
     # Datos MySQL del módulo
     # =========================
-    # columns, rows = ModuleDataQueryService.get_placeholder_data() # Datos temporales para UI
-    columns, rows = ModuleDataQueryService.fetch_table_data(
+    columns, rows, field_metadata = ModuleTableDataService.get_table_data(
         company=company,
-        table_name=models[0]["tabla"],
-        campos=models[0]["campos"],
+        model_definition=models[0],
+        limit=1000,
     )
+
+    print("--------------------------------")
+    print("field_metadata")
+    for meta in field_metadata:
+        print(meta+": ", field_metadata[meta])
+        print("--------------------------------")
+    print("--------------------------------")
 
 
     # =========================
@@ -82,7 +93,7 @@ def module_main_view(request, module_id: str):
         "models": models,
         "columns": columns,
         "rows": rows,
-        
+        "field_metadata": field_metadata,
     }
     return render(
         request,

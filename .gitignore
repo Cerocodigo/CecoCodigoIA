@@ -18,7 +18,7 @@ venv311/
 # =========================
 media/
 staticfiles/
-# db.sqlite3
+db.sqlite3
 
 # =========================
 # Logs

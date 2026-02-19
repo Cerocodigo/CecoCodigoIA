@@ -26,20 +26,25 @@
     <link rel="stylesheet" href="{% static 'shared/vendor/fontawesome/css/all.min.css' %}">
 
     <!-- Google Fonts (CDN, decisión consciente) -->
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900">
 
     <!-- ========================= -->
-    <!-- Tema base (SB Admin 2) -->
+    <!-- SB Admin 2 CSS -->
     <!-- ========================= -->
-    <link rel="stylesheet"
-          href="{% static 'core/vendor/sb-admin-2/css/sb-admin-2.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/vendor/sb-admin-2/css/sb-admin-2.min.css' %}">
+
+    <!-- ========================= -->
+    <!-- DataTables CSS (SB Admin 2) -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'core/vendor/sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.css' %}">
 
     <!-- ========================= -->
     <!-- CSS propio del sistema -->
     <!-- ========================= -->
     {% block core_css %}{% endblock %}
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/module/modules.css' %}">
+    {% endblock %}
 </head>
 
 <body id="page-top">
@@ -49,7 +54,7 @@
 
         <!-- Sidebar -->
         {% block sidebar %}
-            {% include "core/partials/sidebar_dashboard.html" %}
+        {% include "core/partials/sidebar_dashboard.html" %}
         {% endblock %}
         <!-- End Sidebar -->
 
@@ -61,7 +66,7 @@
 
                 <!-- Topbar -->
                 {% block topbar %}
-                    {% include "core/partials/topbar.html" %}
+                {% include "core/partials/topbar.html" %}
                 {% endblock %}
                 <!-- End Topbar -->
 
@@ -76,7 +81,7 @@
 
             <!-- Footer -->
             {% block footer %}
-                {% include "core/partials/footer.html" %}
+            {% include "core/partials/footer.html" %}
             {% endblock %}
             <!-- End Footer -->
 
@@ -92,8 +97,8 @@
     </a>
 
     <!-- Logout Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog"
-         aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
 
@@ -135,7 +140,13 @@
     <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
     <!-- ========================= -->
-    <!-- JS del tema base -->
+    <!-- DataTables JS -->
+    <!-- ========================= -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- SB Admin 2 JS -->
     <!-- ========================= -->
     <script src="{% static 'core/vendor/sb-admin-2/js/sb-admin-2.min.js' %}"></script>
 
@@ -148,9 +159,11 @@
     <!-- JS propio del sistema -->
     <!-- ========================= -->
     {% block core_js %}
-        <script src="{% static 'core/js/modules.js' %}"></script>
+    <script src="{% static 'core/js/module/modules.js' %}"></script>
     {% endblock %}
+
     {% block extra_js %}{% endblock %}
 
 </body>
+
 </html>

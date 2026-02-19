@@ -9,6 +9,8 @@ from core.views.company_join_requests import (approve_join_request,reject_join_r
 from core.views.modules.create_module_view import (create_module_view)
 from core.views.modules.module_main_view import (module_main_view)
 
+from core.views.modules.sync_module_schema_view import (sync_module_schema_view,)
+
 app_name = "core"
 
 urlpatterns = [
@@ -22,8 +24,8 @@ urlpatterns = [
     path("company/join-request/<int:request_id>/approve/",approve_join_request,name="approve_join_request"),
     path("company/join-request/<int:request_id>/reject/",reject_join_request,name="reject_join_request"),
     path("module/create/",create_module_view,name="create_module"),
-    path("module/<slug:module_id>/main/", module_main_view, name="module_main")
-
-
+    path("module/<slug:module_id>/main/", module_main_view, name="module_main"),
+    # Endpoint de desarrollo para sincronizar esquema MySQL
+    path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema",),
     
 ]
