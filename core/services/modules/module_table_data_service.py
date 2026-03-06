@@ -217,5 +217,4 @@ class ModuleTableDataService:
             return structured_columns, filtered_rows, field_metadata
 
         except Exception as e:
-            print(f"Error en get_table_data: {e}")
             return [], [], {}

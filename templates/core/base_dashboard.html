@@ -139,6 +139,13 @@
     <!-- jQuery Easing -->
     <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 
+    <!-- ExcelJS -->
+    <script src="{% static 'shared/vendor/exceljs/exceljs.min.js' %}"></script>
+
+    <!-- jsPDF -->
+    <script src="{% static 'shared/vendor/jspdf/jspdf.umd.min.js' %}"></script>
+
+
     <!-- ========================= -->
     <!-- DataTables JS -->
     <!-- ========================= -->
@@ -161,6 +168,16 @@
     {% block core_js %}
     <script src="{% static 'core/js/module/modules.js' %}"></script>
     {% endblock %}
+
+    <script>
+    window.APP = {
+        user: {
+            firstName: "{{ user.first_name|escapejs }}",
+            lastName: "{{ user.last_name|escapejs }}",
+            role: "{{ user_role|escapejs }}"
+        }
+    };
+</script>
 
     {% block extra_js %}{% endblock %}
 

@@ -17,6 +17,8 @@ from core.services.modules.module_table_data_service import (ModuleTableDataServ
 #? Servicio de sincronización Mongo → MySQL (Desarrollo)
 from core.services.modules.update_model_mysql_schema_service import (UpdateModelMySQLSchemaService,)
 
+from core.db.mongo.services.reports.report_query_service import (ReportQueryService,)
+
 def module_main_view(request, module_id: str):
     """
     Vista principal del módulo:
@@ -36,17 +38,20 @@ def module_main_view(request, module_id: str):
         request.session.flush()
         return redirect("accounts:login")
 
-    company = request.company_ctx
+    company = getattr(request, "company_ctx", None)
+    if not company:
+        raise Http404("Empresa no disponible en el contexto")
+    
+    # =========================
+    # Relación usuario-empresa
+    # =========================
+    user_company = UserCompany.objects.filter(
+        user=user,
+        company=request.company_ctx,
+        is_active=True
+    ).first()
 
-    #? =========================
-    #? Sincronización Mongo → MySQL (Desarrollo)
-    #? =========================
-    UpdateModelMySQLSchemaService.update_schema_for_model(
-            company=company,
-            model_id=module_id,
-        )
-
-
+    
     # =========================
     # Obtener módulo (Mongo)
     # =========================
@@ -66,6 +71,15 @@ def module_main_view(request, module_id: str):
         module_id=module_id,
     )
 
+    for model in models:
+            #? =========================
+            #? Sincronización Mongo → MySQL (Desarrollo)
+            #? =========================
+            UpdateModelMySQLSchemaService.update_schema_for_model(
+                    company=company,
+                    model_id=model["id"],
+                )
+
     # =========================
     # Datos MySQL del módulo
     # =========================
@@ -75,13 +89,13 @@ def module_main_view(request, module_id: str):
         limit=1000,
     )
 
-    print("--------------------------------")
-    print("field_metadata")
-    for meta in field_metadata:
-        print(meta+": ", field_metadata[meta])
-        print("--------------------------------")
-    print("--------------------------------")
-
+    # =========================
+    # Obtener reportes del módulo (Mongo)
+    # =========================
+    reports = ReportQueryService.get_reports_by_module(
+        company=company,
+        module_id=module_id,
+    )
 
     # =========================
     # Contexto
@@ -89,11 +103,13 @@ def module_main_view(request, module_id: str):
     context = {
         "user": user,
         "company": company,
+        "user_role": user_company.role_slug if user_company else "user",
         "module": module,
         "models": models,
         "columns": columns,
         "rows": rows,
         "field_metadata": field_metadata,
+        "reports": reports,
     }
     return render(
         request,

@@ -1,0 +1,58 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark">
+
+    <!-- Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center"
+       href="{% url 'core:dashboard' %}">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">
+            Cerocodigo<sup>ia</sup>
+        </div>
+    </a>
+
+    <hr class="sidebar-divider">
+
+    <!-- Prompt IA -->
+    <div class="sidebar-heading">
+        Prompt IA
+    </div>
+
+    <li class="nav-item px-3">
+
+        <textarea
+            id="reportPrompt"
+            class="form-control form-control-sm"
+            rows="6"
+            placeholder="Ej: Reporte de ventas por cliente entre fechas..."
+            style="resize:none;"
+        ></textarea>
+
+        <small class="text-light d-block mt-2">
+            Presione Enter o el botón para generar.
+        </small>
+
+        <button
+            id="generateReportBtn"
+            class="btn btn-light btn-sm btn-block mt-2">
+            Generar reporte
+        </button>
+
+        <div id="report-loading"
+             class="mt-3 text-white small"
+             style="display:none;">
+            Generando reporte...
+        </div>
+
+    </li>
+
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0"
+                id="sidebarToggle">
+        </button>
+    </div>
+
+</ul>

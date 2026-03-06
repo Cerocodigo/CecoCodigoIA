@@ -1,0 +1,100 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion">
+    <!-- Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Cerocodigo<sup>ia</sup></div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <!-- Empresa activa -->
+    <div class="sidebar-heading">
+        Empresa
+    </div>
+
+    <li class="nav-item px-3 text-white small">
+        {{ company.nombre_comercial|default:"—" }}
+    </li>
+
+
+    <hr class="sidebar-divider">
+
+    <!-- Reporte -->
+    <div class="sidebar-heading">
+        Reporte
+    </div>
+    <li class="nav-item px-3 text-white small">
+        {{ report.nombre }}
+    <hr class="sidebar-divider">
+    <div class="px-3">
+
+        <!-- Botón Ejecutar -->
+        <button id="btn-execute-report"
+                class="btn btn-success btn-block mb-3">
+            Ejecutar reporte
+        </button>
+
+        <div class="sidebar-heading">
+            Parámetros
+        </div>
+
+        <!-- Variables -->
+        {% for var in report.parametros.variables %}
+            <div class="form-group">
+                <label class="text-white">
+                    {{ var.etiqueta }}
+                </label>
+
+                {% if var.tipo_dato == "date" %}
+                    <input type="date"
+                           class="form-control report-variable"
+                           data-key="{{ var.nombre }}"
+                           value="{% now 'Y-m-d' %}">
+                {% elif var.tipo_dato == "number" %}
+                    <input type="text"
+                           class="form-control report-variable"
+                           data-key="{{ var.nombre }}"
+                           value="0">
+                {% else %}
+                    <input type="text"
+                           class="form-control report-variable"
+                           data-key="{{ var.nombre }}"
+                           value="%">
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <!-- Referencias -->
+        {% for ref in report.parametros.referencias %}
+            <div class="form-group">
+                <label class="text-white">
+                    {{ ref.etiqueta }}
+                </label>
+
+                <div class="input-group">
+                    <input type="text"
+                           class="form-control report-reference"
+                           data-key="{{ ref.nombre }}">
+                           <!-- readonly> -->
+
+                    <div class="input-group-append">
+                        <button class="btn btn-light btn-open-reference"
+                                data-tabla="{{ ref.tabla }}"
+                                data-campo="{{ ref.campo }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+    <hr class="sidebar-divider d-none d-md-block">
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

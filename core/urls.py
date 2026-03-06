@@ -11,6 +11,12 @@ from core.views.modules.module_main_view import (module_main_view)
 
 from core.views.modules.sync_module_schema_view import (sync_module_schema_view,)
 
+from core.views.reports.reports_main_view import reports_main_view
+
+from core.views.reports.create_report_view import create_report_view
+from core.views.reports.execute_report_view import execute_report_view
+# from core.views.reports.reports_main_view import reports_main_view
+
 app_name = "core"
 
 urlpatterns = [
@@ -25,7 +31,16 @@ urlpatterns = [
     path("company/join-request/<int:request_id>/reject/",reject_join_request,name="reject_join_request"),
     path("module/create/",create_module_view,name="create_module"),
     path("module/<slug:module_id>/main/", module_main_view, name="module_main"),
+    
     # Endpoint de desarrollo para sincronizar esquema MySQL
-    path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema",),
+    path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema"),
+
+    # Reportes Dinámicos
+    
+    path("reports/<str:report_id>/main/",reports_main_view,name="report_main"),
+    path("reports/api/execute/<str:report_id>/", execute_report_view, name="api_execute_report"),
+
+    # path("reports/create/", reports_main_view, name="create_reports"),
+    path("reports/api/create/", create_report_view, name="api_create_report"),
     
 ]

@@ -132,8 +132,3 @@ class SQLValidator:
                 "DELETE sin WHERE no está permitido"
             )
 
-        # SELECT * prohibido (forzamos explícito)
-        if sql.startswith("select *"):
-            raise MySQLExecutionError(
-                "SELECT * no está permitido"
-            )

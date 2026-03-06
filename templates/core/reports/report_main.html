@@ -1,0 +1,37 @@
+{% extends "core/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+{{ report.nombre }}
+{% endblock %}
+
+{% block sidebar %}
+{% include "core/partials/sidebar_reports_main.html" %}
+{% endblock %}
+
+{% block content %}
+{{ report|json_script:"report-data" }}
+<div id="report-container">
+     <!-- data-report='{{ report|safe }}'> -->
+
+    <!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {{ report.nombre }}
+        </h1>
+    </div> -->
+
+    <div id="report-results">
+        <div class="alert alert-info">
+            Configure los parámetros y presione Ejecutar.
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/reports/report_main.js' %}"></script>
+<script src="{% static 'core/js/reports/create_excel_report.js' %}"></script>
+<script src="{% static 'core/js/reports/create_pdf_report.js' %}"></script>
+{% endblock %}

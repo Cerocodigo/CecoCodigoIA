@@ -41,10 +41,26 @@
     </li>
 
     <li class="nav-item">
-        <a class="nav-link" href="#">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReports">
             <i class="fas fa-chart-bar"></i>
             <span>Reportes</span>
         </a>
+        <div id="collapseReports" class="collapse">
+            <div class="bg-white py-2 collapse-inner my-collapse-rounded">
+                {% for report in reports %}
+                <!-- path("reports/<str:report_id>/main/",reports_main_view,name="report_main"), -->
+                <a class="collapse-item" href="/reports/{{ report.id }}/main" target="_blank" style="padding-left: 0px;white-space: normal; word-break: break-word;">
+                    <i class="fas fa-file-alt"></i>
+                    {{ report.nombre }}
+                </a>
+                {% empty %}
+                <div class="px-3 text-muted small">
+                    Sin reportes disponibles
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
     </li>
 
     <li class="nav-item">
