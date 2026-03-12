@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Onboarding{% endblock %} | CeCoCodigoIA</title>
+
+    <!-- ========================= -->
+    <!-- CSRF GLOBAL -->
+    <!-- ========================= -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <!-- ========================= -->
+    <!-- CSS compartido del sistema -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'shared/css/base.css' %}">
+
+    <!-- ========================= -->
+    <!-- Vendor GLOBAL compartido -->
+    <!-- ========================= -->
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="{% static 'shared/vendor/fontawesome/css/all.min.css' %}">
+
+    <!-- Google Fonts (CDN, decisión consciente) -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900">
+
+    <!-- ========================= -->
+    <!-- Tema base (SB Admin 2) -->
+    <!-- ========================= -->
+    <link rel="stylesheet"
+          href="{% static 'core/vendor/sb-admin-2/css/sb-admin-2.min.css' %}">
+
+    <!-- ========================= -->
+    <!-- CSS propio del sistema -->
+    <!-- ========================= -->
+    {% block core_css %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                {% block topbar %}
+                    {% include "core/partials/topbar_onboarding.html" %}
+                {% endblock %}
+                <!-- End Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    {% block content %}{% endblock %}
+                </div>
+                <!-- End Page Content -->
+
+            </div>
+            <!-- End Main Content -->
+
+            <!-- Footer -->
+            {% block footer %}
+                {% include "core/partials/footer.html" %}
+            {% endblock %}
+            <!-- End Footer -->
+
+        </div>
+        <!-- End Content Wrapper -->
+
+    </div>
+    <!-- End Page Wrapper -->
+
+    <!-- Scroll to Top Button -->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog"
+         aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">¿Cerrar sesión?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    Tu sesión actual se cerrará.
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <a class="btn btn-primary" href="{% url 'accounts:logout' %}">
+                        Logout
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Vendor JS (orden vital) -->
+    <!-- ========================= -->
+
+    <!-- jQuery -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- jQuery Easing -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS del tema base -->
+    <!-- ========================= -->
+    <script src="{% static 'core/vendor/sb-admin-2/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS compartido del sistema -->
+    <!-- ========================= -->
+    <script src="{% static 'shared/js/utils.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS propio del sistema -->
+    <!-- ========================= -->
+    {% block core_js %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

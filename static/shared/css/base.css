@@ -1,0 +1,23 @@
+/* =========================
+   Sidebar - Hover módulos
+   ========================= */
+
+.sidebar .nav-item .nav-link {
+    border-radius: 0.35rem;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.sidebar .nav-item .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* Ícono también más visible */
+.sidebar .nav-item .nav-link:hover i {
+    color: #fff;
+}
+
+/* Redondeado inferior para collapse */
+.my-collapse-rounded {
+    border-radius: 0px 0px 5px 5px !important;
+}

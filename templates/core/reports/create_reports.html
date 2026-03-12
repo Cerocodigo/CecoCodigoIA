@@ -1,0 +1,43 @@
+{% extends "core/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+Crear Reportes
+{% endblock %}
+
+{% block sidebar %}
+{% include "core/partials/sidebar_create_reports.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Título -->
+    <h1 class="h3 mb-4 text-gray-800">
+        Reportes Dinámicos
+    </h1>
+
+    <!-- Card principal -->
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <!-- Mensaje inicial -->
+            <div id="reportPreviewContainer">
+
+                <div class="alert alert-info">
+                    Escribe una instrucción en el panel izquierdo para generar un reporte dinámico con IA.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/reports/create_report.js' %}"></script>
+{% endblock %}

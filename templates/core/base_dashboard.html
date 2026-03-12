@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Dashboard{% endblock %} | CeCoCodigoIA</title>
+
+    <!-- ========================= -->
+    <!-- CSRF GLOBAL -->
+    <!-- ========================= -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <!-- ========================= -->
+    <!-- CSS compartido del sistema -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'shared/css/base.css' %}">
+
+    <!-- ========================= -->
+    <!-- Vendor GLOBAL compartido -->
+    <!-- ========================= -->
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="{% static 'shared/vendor/fontawesome/css/all.min.css' %}">
+
+    <!-- Google Fonts (CDN, decisión consciente) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900">
+
+    <!-- ========================= -->
+    <!-- SB Admin 2 CSS -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'core/vendor/sb-admin-2/css/sb-admin-2.min.css' %}">
+
+    <!-- ========================= -->
+    <!-- DataTables CSS (SB Admin 2) -->
+    <!-- ========================= -->
+    <link rel="stylesheet" href="{% static 'core/vendor/sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.css' %}">
+
+    <!-- ========================= -->
+    <!-- CSS propio del sistema -->
+    <!-- ========================= -->
+    {% block core_css %}{% endblock %}
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/module/modules.css' %}">
+    {% endblock %}
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        {% block sidebar %}
+        {% include "core/partials/sidebar_dashboard.html" %}
+        {% endblock %}
+        <!-- End Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                {% block topbar %}
+                {% include "core/partials/topbar.html" %}
+                {% endblock %}
+                <!-- End Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    {% block content %}{% endblock %}
+                </div>
+                <!-- End Page Content -->
+
+            </div>
+            <!-- End Main Content -->
+
+            <!-- Footer -->
+            {% block footer %}
+            {% include "core/partials/footer.html" %}
+            {% endblock %}
+            <!-- End Footer -->
+
+        </div>
+        <!-- End Content Wrapper -->
+
+    </div>
+    <!-- End Page Wrapper -->
+
+    <!-- Scroll to Top Button -->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">¿Cerrar sesión?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    Tu sesión actual se cerrará.
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <a class="btn btn-primary" href="{% url 'accounts:logout' %}">
+                        Logout
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Vendor JS (orden vital) -->
+    <!-- ========================= -->
+
+    <!-- jQuery -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- jQuery Easing -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- ExcelJS -->
+    <script src="{% static 'shared/vendor/exceljs/exceljs.min.js' %}"></script>
+
+    <!-- jsPDF -->
+    <script src="{% static 'shared/vendor/jspdf/jspdf.umd.min.js' %}"></script>
+
+
+    <!-- ========================= -->
+    <!-- DataTables JS -->
+    <!-- ========================= -->
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'core/vendor/sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- SB Admin 2 JS -->
+    <!-- ========================= -->
+    <script src="{% static 'core/vendor/sb-admin-2/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS compartido del sistema -->
+    <!-- ========================= -->
+    <script src="{% static 'shared/js/utils.js' %}"></script>
+
+    <!-- ========================= -->
+    <!-- JS propio del sistema -->
+    <!-- ========================= -->
+    {% block core_js %}
+    <script src="{% static 'core/js/module/modules.js' %}"></script>
+    {% endblock %}
+
+    <script>
+    window.APP = {
+        user: {
+            firstName: "{{ user.first_name|escapejs }}",
+            lastName: "{{ user.last_name|escapejs }}",
+            role: "{{ user_role|escapejs }}"
+        }
+    };
+</script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark">
+    <!-- Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Cerocodigo<sup>ia</sup></div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <!-- Empresa activa -->
+    <div class="sidebar-heading">
+        Empresa
+    </div>
+
+    <li class="nav-item px-3 text-white small">
+        {{ company.nombre_comercial|default:"—" }}
+    </li>
+
+
+    <hr class="sidebar-divider">
+
+    <!-- Procesos / Módulos -->
+    <div class="sidebar-heading">
+        Módulo
+    </div>
+
+    <li class="nav-item px-3 text-white small">
+        {{ module.nombre }}
+    </li>
+
+
+    <hr class="sidebar-divider">
+
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="fas fa-plus"></i>
+            <span>Nuevo</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReports">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reportes</span>
+        </a>
+        <div id="collapseReports" class="collapse">
+            <div class="bg-white py-2 collapse-inner my-collapse-rounded">
+                {% for report in reports %}
+                <!-- path("reports/<str:report_id>/main/",reports_main_view,name="report_main"), -->
+                <a class="collapse-item" href="/reports/{{ report.id }}/main" target="_blank" style="padding-left: 0px;white-space: normal; word-break: break-word;">
+                    <i class="fas fa-file-alt"></i>
+                    {{ report.nombre }}
+                </a>
+                {% empty %}
+                <div class="px-3 text-muted small">
+                    Sin reportes disponibles
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            <i class="fas fa-file-excel"></i>
+            <span>Exportar Excel</span>
+        </a>
+    </li>
+
+    <hr class="sidebar-divider">
+
+    
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOthers">
+            <i class="fas fa-fw fa-folder"></i>
+            <span>Administrar</span>
+        </a>
+        <div id="collapseOthers" class="collapse">
+            <div class="bg-white py-2 collapse-inner my-collapse-rounded">
+                <a class="collapse-item" href="#">
+                    <i class="fas fa-columns"></i>
+                    Cambiar campos
+                </a>
+
+                <a class="collapse-item" href="#">
+                    <i class="fas fa-table"></i>
+                    Crear reportes
+                </a>
+
+                <a class="collapse-item" href="#">
+                    <i class="fas fa-file-pdf"></i>
+                    Crear PDF
+                </a>
+
+                <a class="collapse-item" href="#" 
+                    onclick="syncModuleSchema('{{ module.id }}'); return false;">
+                    <i class="fas fa-database"></i>
+                    Sincronizar BD
+                </a>
+            </div>
+        </div>
+    </li>
+
+    <hr class="sidebar-divider d-none d-md-block">
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>

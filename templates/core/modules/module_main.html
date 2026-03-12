@@ -1,0 +1,163 @@
+{% extends "core/base_dashboard.html" %}
+{% load static %}
+
+{% block sidebar %}
+{% include "core/partials/sidebar_module.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <h1 class="h3 mb-4 text-gray-800">
+        {{ module.nombre }}
+    </h1>
+
+    {% if columns and rows %}
+    <div class="card shadow mb-4">
+        <div class="card-body">
+
+            <div class="card shadow mb-3">
+                <div class="card-body">
+
+                    <div class="row align-items-end">
+                        <div class="col-md-12"
+                            style="border-left: 4px solid #4e73df; padding-left: 10px; border-bottom: 1px solid #e3e6f0;margin-bottom: 10px;">
+                            <h6 class="font-weight-bold text-primary mb-0">
+                                Filtros:
+                            </h6>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label style="margin-bottom: 0px;color:black;"><strong>Columna</strong></label>
+                            <select id="campoFiltro" class="form-control form-control-sm">
+                                <option value="Todas">Todas</option>
+                                {% for col in columns %}
+                                <option value="{{ forloop.counter0 }}" data-nombre="{{ col }}">
+                                    {{ col.etiqueta }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label style="margin-bottom: 0px;color:black;"><strong>Operador</strong></label>
+                            <select id="operadorFiltro" class="form-control form-control-sm"
+                                title="Selecciona el operador de filtrado" onchange="ajustarInputValorFiltro()">
+                                <optgroup label="------------------- Textos -------------------">
+                                    <option value="contiene">Contiene</option>
+                                    <option value="empieza con">Empieza con</option>
+                                    <option value="termina con">Termina con</option>
+                                    <option value="igual a">Igual a</option>
+                                    <option value="distinto a">Distinto a</option>
+                                </optgroup>
+                                <optgroup label="------------------ Numérico ------------------">
+                                    <option value="menor que">Menor que</option>
+                                    <option value="mayor que">Mayor que</option>
+                                    <option value="menor o igual que">Menor o igual que</option>
+                                    <option value="mayor o igual que">Mayor o igual que</option>
+                                </optgroup>
+                                <optgroup label="------------------ Fechas ------------------">
+                                    <option value="entre fechas">Entre fechas</option>
+                                    <option value="fecha menor que">Fecha menor que</option>
+                                    <option value="fecha mayor que">Fecha mayor que</option>
+                                    <option value="fecha menor o igual que">Fecha menor o igual que</option>
+                                    <option value="fecha mayor o igual que">Fecha mayor o igual que</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4" style="padding-right: 0px;" id="divFiltroContainer">
+                            <label style="margin-bottom: 0px;color:black;"><strong>Valor</strong></label>
+                            <input type="text" id="valorFiltro" class="form-control form-control-sm"
+                                onkeydown="if(event.keyCode == 13){ aplicarFiltroModulo(); }"
+                                placeholder="Valor a filtrar">
+                        </div>
+
+                        <div class="col-md-4" style="display: flex; align-items: center; gap: 5px;padding-left: 0px;">
+                            <button class="btn btn-primary btn-sm" style="width: 50px;" onclick="aplicarFiltroModulo()">
+                                <i class="fas fa-check"></i>
+                            </button>
+
+                            <button class="btn btn-danger btn-sm" style="width: 50px;"
+                                onclick="limpiarFiltrosAplicados()">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+
+                            <div class="form-check mt-2" style="margin-left: 10px;font-size: 15px;">
+                                <input type="checkbox" class="form-check-input" id="checkAcumularFiltros">
+                                <label class="form-check-label" style="color: black;">
+                                    Acumular filtros
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div id="filtrosAplicados" class="mt-2 small text-muted">
+                        No hay filtros aplicados
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="table-responsive" id="moduleTableWrapper">
+                <table class="table table-bordered table-sm datatable" id="moduleTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th style="width:120px;">Acciones</th>
+                            {% for col in columns %}
+                            <th data-nombre="{{ col }}">
+                                {{ col.etiqueta }}
+                            </th>
+                            {% endfor %}
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="#" class="btn btn-sm btn-info" data-id="{{ row.pk }}">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-primary" data-id="{{ row.pk }}">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-danger" data-id="{{ row.pk }}">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+
+                            {% for value in row.values %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{{ columns|length }}" class="text-center text-muted">
+                                Sin registros
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2" id="moduleTableFooter">
+                <div id="moduleTableInfo"></div>
+                <div id="moduleTablePagination"></div>
+            </div>
+
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        Este módulo aún no tiene datos disponibles.
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

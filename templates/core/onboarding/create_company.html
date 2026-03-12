@@ -1,0 +1,192 @@
+{% extends "core/base_onboarding.html" %}
+{% load static %}
+
+{% block title %}Crear empresa{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-xl-10 col-lg-12">
+
+        <!-- ========================= -->
+        <!-- Mensajes -->
+        <!-- ========================= -->
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Título: Crear empresa -->
+        <div class="mb-4">
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                Crear empresa
+            </h1>
+            <p class="mb-0 text-muted">
+                Ingresa los datos de tu empresa para comenzar a usar el sistema.
+            </p>
+        </div>
+        <div id="create-company-messages" class="mb-4" style="display:none;"></div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- ========================= -->
+            <!-- CARD: Datos generales -->
+            <!-- ========================= -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        Datos generales
+                    </h6>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>RUC</label>
+                        <input type="text" class="form-control" name="erp_Ruc" placeholder="RUC" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Razón social</label>
+                        <input type="text" class="form-control" name="erp_RazonSocial" placeholder="Razón social"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre comercial</label>
+                        <input type="text" class="form-control" name="erp_NombreComercial"
+                            placeholder="Nombre comercial" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Dirección</label>
+                        <input type="text" class="form-control" name="erp_Direccion" placeholder="Dirección" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================= -->
+            <!-- CARD: Información tributaria -->
+            <!-- ========================= -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">
+                        Información tributaria
+                    </h6>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Es contribuyente especial</label>
+                        <select class="form-control" name="erp_EsContribuyenteEspecial"
+                            id="erp_EsContribuyenteEspecial">
+                            <option value="0">No</option>
+                            <option value="1">Sí</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Número de Contribuyente Especial</label>
+                        <input type="text" class="form-control" name="erp_NumeroContribuyenteEspecial"
+                            id="erp_NumeroContribuyenteEspecial" value="0" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Obligado a llevar contabilidad</label>
+                        <select class="form-control" name="erp_ObligadoContabilidad">
+                            <option value="NO">No</option>
+                            <option value="SI">Sí</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Régimen</label>
+                        <select class="form-control" name="erp_Regimen">
+                            <option value="No">Otros</option>
+                            <option value="Persona Natural">Persona Natural</option>
+                            <option value="General">General</option>
+                            <option value="CONTRIBUYENTE RÉGIMEN MICROEMPRESAS">
+                                Contribuyente Régimen Microempresas
+                            </option>
+                            <option value="CONTRIBUYENTE RÉGIMEN RIMPE">
+                                Contribuyente Régimen RIMPE
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Agente de retención</label>
+                        <select class="form-control" name="erp_AgenteRetencion">
+                            <option value="No">No</option>
+                            <option value="1">Sí</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================= -->
+            <!-- CARD: Archivos -->
+            <!-- ========================= -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        Archivos (opcional)
+                    </h6>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Logo de la empresa</label>
+                        <input type="file" class="form-control-file" name="erp_LogoFile" accept=".png,.jpg,.jpeg">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================= -->
+            <!-- Confirmación + acciones -->
+            <!-- ========================= -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="erp_Confirmacion" id="confirmacion"
+                            required>
+                        <label class="form-check-label" for="confirmacion">
+                            Confirmo que la información es correcta y deseo crear la empresa
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'core:select_company' %}" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn btn-success" id="btn-submit">
+                            <span class="btn-text">
+                                Crear empresa
+                            </span>
+                            <span class="btn-spinner d-none">
+                                <span class="spinner-border spinner-border-sm mr-2" role="status"
+                                    aria-hidden="true"></span>
+                                Creando empresa...
+                            </span>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% block extra_js %}
+<script src="{% static 'core/js/onboarding/create_company.js' %}"></script>
+{% endblock %}
+
+{% endblock %}
