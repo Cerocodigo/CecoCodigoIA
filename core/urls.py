@@ -8,6 +8,7 @@ from core.views.dashboard import dashboard_view
 from core.views.company_join_requests import (approve_join_request,reject_join_request)
 from core.views.modules.create_module_view import (create_module_view)
 from core.views.modules.module_main_view import (module_main_view)
+from core.views.modules.module_new_reg_view import (module_new_reg_view, calculosReferenciaBuscador)
 
 from core.views.modules.sync_module_schema_view import (sync_module_schema_view,)
 
@@ -29,8 +30,12 @@ urlpatterns = [
     path("dashboard/", dashboard_view, name="dashboard"),
     path("company/join-request/<int:request_id>/approve/",approve_join_request,name="approve_join_request"),
     path("company/join-request/<int:request_id>/reject/",reject_join_request,name="reject_join_request"),
+
+    # Módulo
     path("module/create/",create_module_view,name="create_module"),
     path("module/<slug:module_id>/main/", module_main_view, name="module_main"),
+    path("module/<slug:module_id>/new/", module_new_reg_view, name="module_new_reg"),
+    path("calculosReferenciaBuscador/<str:modelo>/<str:campo>/",calculosReferenciaBuscador, name="calculosReferenciaBuscador"),
     
     # Endpoint de desarrollo para sincronizar esquema MySQL
     path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema"),
