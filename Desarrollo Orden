@@ -1,0 +1,94 @@
+
+
+
+Partes de codigo a desarrollar
+
+
+Log y creacion de usuario 
+-Sign-in -- validacion y todo eso y activacion
+-Log-in
+-Main de log in Seleciona empresa
+--Creacion de empresa               ---Ok -- Falta aplicar y selecionar le modelo
+--Actualizar de empresa             ---Avanzado falta interfaz 
+--Vincular usuarios empresa         ---Avanzado falta interfaz
+--Restaurar Modelo Json de Empresa  ---Falta
+
+
+Empresa Core
+-Main                               ---Falta
+--Ver Charts                        ---Falta    
+--Editar Chart                      ---Falta
+--Pedir Charts a IA                 ---Falta    
+
+-Modulos
+--Crear Modulo
+---Edicion manual de Json*
+---Importar Modulo Pre-hecho o pedirlo a IA*
+
+--Modulo
+---Formulario Campos                      ---Media
+
+----TextoSimple
+----NumeroSimple
+----NumeroSecuencial
+----SistemaFecha
+----SistemaUsuario
+----OpcionMultiple
+----Referencia
+----ReferenciaBuscador
+----ReferenciaAdjunto -- pueda ser imagen
+----QueryBaseDatos
+----Operacion
+----FormatoTexto
+----Condicional
+----Archivo
+
+---New                             ---
+---Update
+---View
+---Delete
+
+
+
+
+--Pdf
+---Crear -Actualizr- Borrar
+---Salga el pdf de un json sobre un registro 
+---Edicion manual de Json* -- simularlo antes de guardar -- Importar Modulo Pre-hecho o pedirlo a IA*
+
+
+-Reportes
+-- Crear -Actualizr- Borrar
+-- sacar reprotes se exporte en -- PDF y Excell                 ---ok
+---Edicion manual de Json*---Importar Modulo Pre-hecho o pedirlo a IA*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
