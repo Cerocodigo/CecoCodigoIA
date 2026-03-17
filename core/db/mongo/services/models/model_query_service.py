@@ -62,6 +62,35 @@ class ModelQueryService:
         return models
 
     @staticmethod
+    def get_models_for_module_rol(*, company, module_id: str, module_rol: str) -> list[dict]:
+        """
+        Devuelve todos los modelos activos
+        asociados a un módulo y un rol específico.
+
+        Ej:
+        module_id = "clientes"
+        module_rol = "cabecera"
+        """
+
+        collection = ModelQueryService.get_collection(company)
+
+        models = list(
+            collection.find(
+                {
+                    "modulo": module_id,
+                    "rol": module_rol,
+                    "activo": True,
+                }
+            )
+        )
+
+        # Normalizamos _id a string
+        for model in models:
+            model["id"] = str(model["_id"])
+
+        return models
+
+    @staticmethod
     def get_model_by_id(*, company, model_id: str) -> dict | None:
         """
         Obtiene un modelo específico por su _id.
