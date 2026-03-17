@@ -14,16 +14,88 @@ Log y creacion de usuario
 --Restaurar Modelo Json de Empresa  ---Falta
 
 
+
+
 Empresa Core
 -Main                               ---Falta
 --Ver Charts                        ---Falta    
 --Editar Chart                      ---Falta
 --Pedir Charts a IA                 ---Falta    
 
+
+
+Nicolas 
+
+Validacion 
+-- Validar los json
+-- REvisar todos los campos y validar configuracion- valida que este estructurado corectamente segun tipo de campo y estructura base
+
+    "visible": true,
+    "nombre": "MedioPago",
+    "etiqueta": "Medio de Pago",
+    "tipo_base": "SQL_TYPES", -- Tipo de campo a nivel de base de datos Mysql u otro
+    "tipo_funcional": "Cecod_TYPES",
+    "editable": true,
+    "requerido": true,
+    "configuracion":{},
+    "orden": 30,
+    "col": 6,
+    "area": "main"
+
+
+SQL_TYPES = {
+    "pk": "INT AUTO_INCREMENT PRIMARY KEY",
+    "string": "VARCHAR(255)",
+    "char": "CHAR(1)",
+    "text": "TEXT",
+    "int": "INT",
+    "integer": "INT",
+    "decimal": "DECIMAL(10,2)", ** Error
+    "boolean": "TINYINT(1)",
+    "date": "DATE",
+    "datetime": "DATETIME",
+    "time": "TIME",
+    "fk": "INT",
+
+}
+
+-- Valia que Mysql tenga ls mismos campos que el json
+scheme  con split y 
+se actualiza segun datos
+--Existe la misma tabla con nombre
+
+Cecod_TYPES -- son campos  anivel de funciones
+----TextoSimple
+----NumeroSimple
+----NumeroSecuencial
+----SistemaFecha
+----SistemaUsuario
+----OpcionMultiple
+----Referencia
+----ReferenciaBuscador
+----ReferenciaAdjunto -- pueda ser imagen
+----QueryBaseDatos
+----Operacion
+----FormatoTexto
+----Condicional
+----Archivo
+
+
+Validar Json Charts
+
+Validar Json Reportes
+
+Validar Json PDF
+
+
+
+
 -Modulos
 --Crear Modulo
 ---Edicion manual de Json*
 ---Importar Modulo Pre-hecho o pedirlo a IA*
+
+
 
 --Modulo
 ---Formulario Campos                      ---Media
@@ -47,6 +119,9 @@ Empresa Core
 ---Update
 ---View
 ---Delete
+
+
+
 
 
 
