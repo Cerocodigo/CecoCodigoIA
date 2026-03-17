@@ -252,3 +252,197 @@ def calculosReferenciaBuscador(request, modelo, campo):
 
 
 
+
+def calculosNumeroSecuencial(request, modelo, campo):
+    # =========================
+    # Usuario autenticado
+    # =========================
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("accounts:login")
+
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except User.DoesNotExist:
+        request.session.flush()
+        return redirect("accounts:login")
+
+    company = getattr(request, "company_ctx", None)
+    if not company:
+        raise Http404("Empresa no disponible en el contexto")
+
+    # =========================
+    # Obtener modelos del módulo (Mongo)
+    # =========================
+    models = ModelQueryService.get_models_for_module(
+        company=company,
+        module_id=modelo,
+    )
+
+    if not models:
+        return JsonResponse({"estado": False, "msg": "modelo no encontrado"})
+
+    # 2️⃣ Buscar campo
+    campo_conf = next(
+        (c for c in models[0].get("campos", []) if c.get("nombre") == campo),
+        None
+    )
+
+    if not campo_conf:
+        return JsonResponse({"estado": False, "msg": "campo no existe en el modelo"})
+
+    # 3️⃣ Verificar tipo funcional
+    if campo_conf.get("tipo_funcional") != "NumeroSecuencial":
+        return JsonResponse({
+            "estado": True,
+            "msg": "campo no es secuencial",
+            "valor": None
+        })
+
+    campo = campo_conf.get("nombre")
+    tabla = models.get("tabla")
+    sql = f"""
+        SELECT COALESCE(MAX({campo}), 0) AS actual
+        FROM {tabla}
+    """
+
+    # 5️⃣ Ejecutar SQL
+    try:
+        connection = MySQLCompanyConnectionService.get_connection_for_company(
+            company=company
+        )
+        executor = MySQLExecutor(connection)
+        dml = MySQLDMLService(executor)
+        try:
+            rows = dml.fetch_all(sql, params=None)
+            actual = rows[0]["actual"] if rows and rows["actual"] is not None else 0
+            siguiente = actual + 1
+            return JsonResponse({
+                "estado": True,
+                "tipo": "NumeroSecuencial",
+                "campo": campo,
+                "tabla": tabla,
+                "actual": actual,
+                "siguiente": siguiente
+            })
+        finally:
+            try:
+                connection.close()
+            except Exception:
+                pass
+    except Exception as e:
+        return JsonResponse({
+            "estado": False,
+            "msg": "Error ejecutando SQL",
+            "error": str(e)
+        })
+
+
+
+def calculosQueryBaseDatos(request, modelo, campo):
+       # =========================
+    # Usuario autenticado
+    # =========================
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("accounts:login")
+
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except User.DoesNotExist:
+        request.session.flush()
+        return redirect("accounts:login")
+
+    company = getattr(request, "company_ctx", None)
+    if not company:
+        raise Http404("Empresa no disponible en el contexto")
+
+    # =========================
+    # Obtener modelos del módulo (Mongo)
+    # =========================
+    models = ModelQueryService.get_models_for_module(
+        company=company,
+        module_id=modelo,
+    )
+
+    if not models:
+        return JsonResponse({"estado": False, "msg": "modelo no encontrado"})
+
+    # 2️⃣ Buscar campo
+    campo_conf = next(
+        (c for c in models[0].get("campos", []) if c.get("nombre") == campo),
+        None
+    )
+
+    if not campo_conf:
+        return JsonResponse({"estado": False, "msg": "campo no existe en el modelo"})
+
+    # 3️⃣ Verificar tipo funcional
+    if campo_conf.get("tipo_funcional") != "QueryBaseDatos":
+        return JsonResponse({
+            "estado": True,
+            "msg": "campo no es QueryBaseDatos",
+            "valor": None
+        })
+
+    config = campo_conf.get("configuracion", {})
+    sql_template = config.get("query")['sql']
+    variables_valores =  json.loads(request.body.decode("utf-8"))
+    variables_conf =  config.get("parametros")
+
+    if not sql_template:
+        return JsonResponse({
+            "estado": False,
+            "msg": "SQL no definido en configuración"
+        })
+
+    # 4️⃣ Resolver variables
+    sql = sql_template
+
+    if variables_conf:
+        # formato soportado: "@Var@=CampoFormulario"
+        pares = variables_conf.split(",")
+        for par in pares:
+            print('par >>>', par)
+            var_sql, campo_origen = par.split("=")
+            valor = variables_valores[campo_origen]
+            print("valor >>>", valor)
+            if valor is None:
+                return JsonResponse({
+                    "estado": False,
+                    "msg": f"valor no enviado para {campo_origen}"
+                })
+
+            sql = sql.replace(var_sql, str(valor))
+
+        try:
+            connection = MySQLCompanyConnectionService.get_connection_for_company(
+                company=company
+            )
+            executor = MySQLExecutor(connection)
+            dml = MySQLDMLService(executor)
+
+            try:
+                rows = dml.fetch_all(sql, params=None)
+                valor = list(rows.values())[0] if rows else None
+
+            finally:
+                try:
+                    connection.close()
+                except Exception:
+                    pass
+            return JsonResponse({
+                "estado": True,
+                "tipo": "QueryBaseDatos",
+                "campo": campo,
+                "valor": valor
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "estado": False,
+                "msg": "Error ejecutando SQL",
+                "error": str(e)
+            })
+
+

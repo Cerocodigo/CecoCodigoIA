@@ -1,0 +1,256 @@
+
+
+
+Partes de codigo a desarrollar
+
+
+Log y creacion de usuario 
+-Sign-in -- validacion y todo eso y activacion
+-Log-in
+-Main de log in Seleciona empresa
+--Creacion de empresa               ---Ok -- Falta aplicar y selecionar le modelo
+--Actualizar de empresa             ---Avanzado falta interfaz 
+--Vincular usuarios empresa         ---Avanzado falta interfaz
+--Restaurar Modelo Json de Empresa  ---Falta
+
+
+
+
+Empresa Core
+-Main                               ---Falta
+--Ver Charts                        ---Falta    
+--Editar Chart                      ---Falta
+--Pedir Charts a IA                 ---Falta    
+
+
+
+Nicolas 
+
+Validacion 
+-- Validar los json
+-- REvisar todos los campos y validar configuracion- valida que este estructurado corectamente segun tipo de campo y estructura base
+
+{
+    "visible": true, -- true o false, Especifica si el campo es visible en el formulario
+    "nombre": "MedioPago", Texto que represente el Nombre del campo, mismo nombre se utiliza en la Base de datos para la columna de datos que representa
+    "etiqueta": "Medio de Pago", Texto visible de etqueta del campo en el formulario.
+    "tipo_base": "SQL_TYPES", -- Tipo de campo a nivel de base de datos Mysql u otro
+    "tipo_funcional": "Cecod_TYPES", -- son campos a nivel de funcional logico, cual sume cual resta, cual es el cliente y la relaciones entre ellos
+    "requerido": true, -- determina si puede estar vacio
+    "configuracion":{}, -- aqui segun el "tipo_funcional" se almacena la informacion necesaria para el funcionamiento del campo.
+    "orden": 30, -- 0 a 100, determina el orden de los campos en el formulario y view inicial del modulo.
+    "col": 6, -- 1 a 12, el ancho del div en el formulario col-md-xx
+    "area": "main", -- main o side, determina la posicion en el formulario.
+    "valor_default": null, -- valor predeterminado en base de datos. 
+    "placeholder": "", -- texto de ayuda a usaurio corto.
+    "ayuda": "" -- Explicacion del campo y para que sirve al usuario.
+}
+
+
+SQL_TYPES = {
+    "pk": "INT AUTO_INCREMENT PRIMARY KEY",
+    "string": "VARCHAR(255)",
+    "char": "CHAR(1)",
+    "text": "TEXT",
+    "int": "INT",
+    "integer": "INT",
+    "decimal": "DECIMAL(10,2)", ** Error
+    "boolean": "TINYINT(1)",
+    "date": "DATE",
+    "datetime": "DATETIME",
+    "time": "TIME",
+    "fk": "INT",
+
+}
+
+Cecod_TYPES = [
+    "TextoSimple",
+    "NumeroSimple",
+    "NumeroSecuencial",
+    "SistemaFecha",
+    "SistemaUsuario",
+    "OpcionMultiple",
+    "Referencia",
+    "ReferenciaBuscador",
+    "ReferenciaAdjunto",
+    "QueryBaseDatos",
+    "Operacion",
+    "FormatoTexto",
+    "Condicional",
+    "Archivo"]
+    
+Cecod_TYPES_Configuracion = {
+    "TextoSimple":{
+        "unico": "Si o No", -- Si el valor debe ser unico en la base de datos.
+        "editable": "Si o No", -- Si el usuario puede editarlo
+        "valor_predeterminado": "BORRADOR" -- Valor con el cual empieza el campo en el formulario
+    },
+    "NumeroSimple":{
+        "decimales":2, -- Valor numerico de decimales del campo maximo 6,
+        "min":1, -- Valor numerico minimo del campo
+        "max":100, -- Valor numerico maximo del campo
+    },
+    "NumeroSecuencial":{
+        "inicio": 1, --Valor numerico con el cual inicial el campo
+        "incremento": 1 -- Valor numerico que determina el incremento del campo
+    },
+    "SistemaFecha": {vacia, solo refleja la fecha y hora del servidor, no hay configuracion},
+    "SistemaUsuario":{
+        "modo":'Lista de Usuarios' o 'Usuario Actual' -- determina si el valor relfeja el usuairo actual o una lista de todos los Usuario.
+    },
+    "OpcionMultiple":{
+        "opciones": ["Si","No"],  -- Listado de valores disponibles
+        "labels": { "true": "Si", "false": "No"},  -- Listado de etiquetas de los valores disponibles
+        "valor_predeterminado": "No" -- Valor con el cual empieza el campo en el formulario
+    },
+    "Referencia":{
+        "sql": "SELECT ClienteId, Ruc, RazonSocial, Email, Direccion, Telefono, TipoIdentificacion, Relacionado, TipoCliente FROM clientes WHERE Estado = 'Valido'", -- select directo de mysql.
+        "label_field": "Ruc", -- Identifica el campo cuyo valor se pone en el formulario. 
+        "value_field": "ClienteId",  -- Identifica el campo que se graba en el mysql del campo
+        "campo_principal": "ClienteId", -- determina cual campo se guarda en la base de dato y cual se guarda
+        "campos_filtrables": [
+          "ClienteId",
+          "Ruc",
+          "RazonSocial",
+          "Email",
+          "Telefono",
+          "TipoIdentificacion"
+        ], -- define los campos que se puede filtrar
+        "valor_inicial": "9999999999999"   -- deine como inicial el formulario
+    },
+    "ReferenciaBuscador":{  
+        "sql": "SELECT Secuencial, Nombre, Establecimiento, PuntoEmision, Numero, Direccion, TipoDocumento FROM SriDocumentos WHERE activo = 1 and TipoDocumento = 'Factura'", -- select directo de mysql.
+        "value_field": "Secuencial", -- Identifica el campo que se graba en el mysql del campo.
+        "label_field": "Nombre" --  Identifica el campo cuyo valor se pone en el formulario.
+    },
+    "ReferenciaAdjunto":{
+        "referencia": "Cliente", -- indica el campo Referencia o ReferenciaBuscador sobre el cual se obtiene la info de este campo
+        "campo_origen": "Ruc" -- indica cual es la columna del sql que optiene el valor del campo.
+    },
+    "QueryBaseDatos":{
+        "query": {
+          "sql": "SELECT Numero FROM SriDocumentos WHERE Secuencial = :SriDocumento", -- select de una sola columna de query
+          "default": null  -- valor si no hay resultados del sql
+        },
+        "parametros": ":SriDocumento=SriDocumento" -- define que parametros traspasar al Sql query
+    },
+    "Operacion":{
+        "formula": "Subtotal - DescuentoTotal + Iva",   sentencia directa que reemplaza por campos en el registro y obtiene valor
+        "decimales":2   --  cantidad de decimales del campo
+    },
+    "FormatoTexto":{
+        "template": "{SriDocumentoEstablecimiento}-{SriDocumentoPuntoEmision}-{SriDocumentoNumero}",
+        "padding": {
+          "SriDocumentoEstablecimiento": 3,
+          "SriDocumentoPuntoEmision": 3,
+          "SriDocumentoNumero": 6
+        }
+    },
+    "Condicional":{
+        "condicional": [
+          {"si": "TipoIdentificacion == 'CEDULA'","entonces": "05"},
+          {"si": "TipoIdentificacion == 'PASAPORTE'","entonces": "06"},
+          {"si": "TipoIdentificacion == 'RUC'","entonces": "04"},
+          {"si": "TipoIdentificacion == 'CONSUMIDOR_FINAL'","entonces": "07"}
+        ] -- define "si" "condicion" es verdadera devuelve valor x
+    },
+    "Archivo": {
+        "acepta_archivo": "cualquiera",
+        "tamano_max_mb": 10
+    }
+}
+    
+
+
+-- Valia que Mysql tenga ls mismos campos que el json
+scheme  con split y 
+se actualiza segun datos
+--Existe la misma tabla con nombre
+
+
+Validar Json Charts
+
+Validar Json Reportes
+
+Validar Json PDF
+
+
+
+
+-Modulos
+--Crear Modulo
+---Edicion manual de Json*
+---Importar Modulo Pre-hecho o pedirlo a IA*
+
+
+
+--Modulo
+---Formulario Campos                      ---Media
+
+----TextoSimple
+----NumeroSimple
+----NumeroSecuencial
+----SistemaFecha
+----SistemaUsuario
+----OpcionMultiple
+----Referencia
+----ReferenciaBuscador
+----ReferenciaAdjunto -- pueda ser imagen
+----QueryBaseDatos
+----Operacion
+----FormatoTexto
+----Condicional
+----Archivo
+
+---New                             ---
+---Update
+---View
+---Delete
+
+
+
+
+
+
+
+--Pdf
+---Crear -Actualizr- Borrar
+---Salga el pdf de un json sobre un registro 
+---Edicion manual de Json* -- simularlo antes de guardar -- Importar Modulo Pre-hecho o pedirlo a IA*
+
+
+-Reportes
+-- Crear -Actualizr- Borrar
+-- sacar reprotes se exporte en -- PDF y Excell                 ---ok
+---Edicion manual de Json*---Importar Modulo Pre-hecho o pedirlo a IA*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
