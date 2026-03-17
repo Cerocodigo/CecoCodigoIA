@@ -68,6 +68,8 @@ class ModuleTableDataService:
         """
 
         metadata = {}
+        pk_isVisible = False
+        campo_pk = model_definition.get("pk", "")
 
         for campo in model_definition.get("campos", []):
 
@@ -76,11 +78,11 @@ class ModuleTableDataService:
             tipo_funcional = campo.get("tipo_funcional")
             visible = campo.get("visible", True)
 
-            # Siempre incluir id_*
-            es_pk = nombre.lower().startswith("id_")
-
+            es_pk = (nombre == campo_pk)
             if not visible and not es_pk:
                 continue
+            if es_pk and visible:
+                pk_isVisible = True
 
             configuracion = {}
 
@@ -108,7 +110,7 @@ class ModuleTableDataService:
                 "configuracion": configuracion,
             }
 
-        return metadata
+        return metadata, pk_isVisible
 
 
     # ==================================================
@@ -136,9 +138,9 @@ class ModuleTableDataService:
 
         try:
             # =========================
-            # Metadata desde Mongo
+            # Metadata desde Mongo 
             # =========================
-            field_metadata = ModuleTableDataService.build_field_metadata(
+            field_metadata, pk_isVisible = ModuleTableDataService.build_field_metadata(
                 model_definition
             )
 
@@ -158,12 +160,13 @@ class ModuleTableDataService:
             structured_columns = []
             filtered_column_names = []
             pk_index = None
+            campo_pk = model_definition.get("pk", "")
 
             for index, col in enumerate(raw_columns):
-
-                if col.lower().startswith("id_"):
+                if col == campo_pk:
                     pk_index = index
-                    continue
+                    if not pk_isVisible:
+                        continue
 
                 metadata = field_metadata.get(col, {})
 
@@ -181,22 +184,14 @@ class ModuleTableDataService:
 
             for row in rows:
                 row = list(row)
-
-                # Separar PK
-                if pk_index is not None:
-                    pk_value = row[pk_index]
-                    row_without_pk = [
-                        value for i, value in enumerate(row)
-                        if i != pk_index
-                    ]
-                else:
-                    pk_value = None
-                    row_without_pk = row
+                pk_value = row[pk_index] if pk_index is not None else None
 
                 transformed_values = []
+                for index, value in enumerate(row):
+                    if index == pk_index and not pk_isVisible:
+                        continue
 
-                for index, value in enumerate(row_without_pk):
-                    column_name = filtered_column_names[index]
+                    column_name = raw_columns[index]
                     metadata = field_metadata.get(column_name, {})
 
                     # Serialización base
@@ -208,7 +203,7 @@ class ModuleTableDataService:
                         value = labels.get(str(value), value)
 
                     transformed_values.append(value)
-
+                
                 filtered_rows.append({
                     "pk": pk_value,
                     "values": transformed_values,
