@@ -1,6 +1,6 @@
-# core/views/modules/module_main_view.py
+# core/views/modules/module_new_reg_view.py
 # =====================================
-# Vista principal de un módulo
+# Vista principal de un módulo - Nuevo registro
 # =====================================
 
 
@@ -116,7 +116,7 @@ def module_new_reg_view(request, module_id: str):
                     "modelo_id": fDet["modelo_id"],
                     "entidad": fDet["entidad"],
                     "display": fDet["display"],
-                    "form": fDet["form"]()
+                    "forms": [fDet["form"]()]
                 } for fDet in FormsDetalle
             ],
             "titulo": module["nombre"],

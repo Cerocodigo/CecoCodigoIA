@@ -19,6 +19,8 @@ from core.services.modules.update_model_mysql_schema_service import (UpdateModel
 
 from core.db.mongo.services.reports.report_query_service import (ReportQueryService,)
 
+from core.services.ui.message_service import set_view_msg, pop_view_msg
+
 def module_main_view(request, module_id: str):
     """
     Vista principal del módulo:
@@ -98,6 +100,11 @@ def module_main_view(request, module_id: str):
     )
 
     # =========================
+    # Obtener mensaje flash
+    # =========================
+    view_msg = pop_view_msg(request)
+
+    # =========================
     # Contexto
     # =========================
     context = {
@@ -110,6 +117,7 @@ def module_main_view(request, module_id: str):
         "rows": rows,
         "field_metadata": field_metadata,
         "reports": reports,
+        "view_msg": view_msg,
     }
     return render(
         request,

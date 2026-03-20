@@ -1,33 +1,44 @@
 {% extends "core/base_dashboard.html" %}
 {% load static %}
 
+{% block topbar_title %}
+    <h4 class="mb-0 text-gray-800">
+        {{ module.nombre }}
+    </h4>
+{% endblock %}
+
 {% block sidebar %}
 {% include "core/partials/sidebar_module.html" %}
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-
-    <h1 class="h3 mb-4 text-gray-800">
-        {{ module.nombre }}
-    </h1>
+    {% if view_msg %}
+    <div id="registerAlert" class="alert alert-{{ view_msg.type }} alert-dismissible fade show" role="alert"
+        style="transition: opacity 0.5s ease;">
+        {{ view_msg.text }}
+    </div>
+    {% endif %}
+    <div class="card shadow mb-4">
+        <div class="card-body">
     <div class="row">
         <div class="col-lg-12">
             <form method="post">
                 {% csrf_token %}
                 <div class="d-flex gap-2 mb-3">
                     {% if id %}
-                    <a href="/module/{{module.id}}/new" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-primary">
+                    <a href="/module/{{module.id}}/new" target="_blank" class="btn btn-primary mr-2">
                         Nuevo
                     </a>
                     {% endif %}
 
-                    <button type="submit" name="accion" value="guardar" class="btn btn-primary">
+                    {% if not is_view %}
+                    <button type="submit" name="accion" value="guardar" class="btn btn-primary mr-2">
                         Guardar
                     </button>
+                    {% endif %}
 
-                    {% if id %}
+                    {% if id and not is_view %}
                     <button type="submit" name="accion" value="eliminar" class="btn btn-danger"
                         onclick="return confirm('¿Eliminar registro?')">
                         Eliminar
@@ -62,10 +73,12 @@
                                 {% if a.data_tipo == "ReferenciaBuscador" %}
                                 <div class="input-group">
                                     {{ field }}
+                                    {% if not is_view %}
                                     <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
                                         data-campo="{{ field.name }}" onclick="abrirReferenciaBuscador(this)">
                                         🔍
                                     </button>
+                                    {% endif %}
                                 </div>
                                 {% else %}
                                 {% if a.data_tipo == "Archivo" %}
@@ -179,7 +192,7 @@
                                         id="tabla-detalles-{{detalle.modelo_id}}">
                                         <thead class="table-light">
                                             <tr>
-                                                {% for field in detalle.form %}
+                                                 {% for field in detalle.forms.0 %}
                                                 <th
                                                     class="{% if field.field.widget.attrs.visible is not None and not field.field.widget.attrs.visible %}d-none{% endif %}">
                                                     {{ field.label }}
@@ -190,8 +203,9 @@
                                         </thead>
 
                                         <tbody id="detalles-container{{detalle.modelo_id}}" class="detalles-container">
+                                            {% for form in detalle.forms %}
                                             <tr class="detalle-fila">
-                                                {% for field in detalle.form %}
+                                                {% for field in form %}
                                                 <td
                                                     class="{% if field.field.widget.attrs.visible is not None and not field.field.widget.attrs.visible %}d-none{% endif %}">
 
@@ -199,11 +213,13 @@
                                                     {% if field.field.widget.attrs.data_tipo == "ReferenciaBuscador" %}
                                                     <div class="input-group">
                                                         {{ field }}
+                                                        {% if not is_view %}
                                                         <button type="button" class="btn btn-outline-secondary"
                                                             data-action="abrir-buscador" data-campo="{{ field.name }}"
                                                             onclick="abrirReferenciaBuscadorDetalle(this)">
                                                             🔍
                                                         </button>
+                                                        {% endif %}
                                                     </div>
                                                     {% else %}
                                                     {{ field }}
@@ -211,15 +227,20 @@
                                                 </td>
                                                 {% endfor %}
                                                 <td class="text-center">
+                                                    {% if not is_view %}
                                                     <button type="button"
                                                         class="btn btn-danger btn-sm eliminar-fila">🗑</button>
+                                                    {% endif %}
                                                 </td>
                                             </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
+                                {% if not is_view %}
                                 <button type="button" class="btn btn-primary btn-sm mt-2 agregar-fila">➕ Agregar
                                     fila</button>
+                                {% endif %}
                             </div>
 
                             {% endfor %}
@@ -230,6 +251,9 @@
             </form>
         </div>
     </div>
+    </div>
+    </div>
+
 </div>
 <!-- Scroll to Top Button-->
 <a class="scroll-to-top rounded" href="#page-top">

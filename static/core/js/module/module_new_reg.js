@@ -22,7 +22,7 @@ function abrirReferenciaBuscadorDetalle(btn) {
     document.getElementById("refTablaHead").innerHTML = "";
     document.getElementById("refTablaBody").innerHTML = "";
 
-    new bootstrap.Modal(document.getElementById("modalReferencia")).show();
+    $('#modalReferencia').modal('show');
     buscarReferencia('')
 }
 
@@ -38,7 +38,7 @@ function abrirReferenciaBuscador(btn) {
     document.getElementById("refTablaHead").innerHTML = "";
     document.getElementById("refTablaBody").innerHTML = "";
 
-    new bootstrap.Modal(document.getElementById("modalReferencia")).show();
+    $('#modalReferencia').modal('show');
     buscarReferencia('')
 }
 
@@ -971,6 +971,20 @@ function inicializarNumerosSecuenciales() {
    🚀 INICIALIZACIÓN GENERAL
 ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
+    // =========================
+    // Auto cerrar alertas
+    // =========================
+    const alert = document.getElementById("registerAlert");
+    if (alert) {
+        setTimeout(() => {
+        alert.classList.remove("show");
+
+        setTimeout(() => {
+            alert.remove();
+        }, 300);
+
+    }, 2500);
+    }
 
     inicializarNumerosSecuenciales();
     inicializarDetalles();
