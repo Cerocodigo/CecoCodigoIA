@@ -1,0 +1,31 @@
+/* SWITCH GRANDE BIEN ALINEADO */
+.custom-switch.custom-switch-lg {
+    padding-left: 3rem;
+}
+
+.custom-switch.custom-switch-lg .custom-control-label {
+    position: relative;
+}
+
+/* Fondo del switch */
+.custom-switch.custom-switch-lg .custom-control-label::before {
+    width: 3rem;
+    height: 1.5rem;
+    border-radius: 1rem;
+    top: 0.18rem; /* 🔥 ajuste vertical fino */
+    left: -2.75rem;
+}
+
+/* Bolita */
+.custom-switch.custom-switch-lg .custom-control-label::after {
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    top: 0.3rem; /* 🔥 aquí está la clave */
+    left: -2.6rem;
+}
+
+/* Movimiento cuando está activo */
+.custom-switch.custom-switch-lg .custom-control-input:checked ~ .custom-control-label::after {
+    transform: translateX(1.5rem);
+}

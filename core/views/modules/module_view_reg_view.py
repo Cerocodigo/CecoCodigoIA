@@ -153,11 +153,11 @@ def module_view_reg_view(request, module_id: str, id: int):
                 i += 1
 
         if not form_cab.is_valid() or any(not f["form"].is_valid() for f in forms_detalle):
-            return render(request, "modulos/moduloNuevo.html", {
+            return render(request, "modulos/module_new_reg.html", {
                 "form": form_cab,
                 "formularios_detalle": formularios_detalle,
-                "titulo": module["nombre"],
-                "modulo": module,
+                "titulo_topbar": module["nombre"] + (" - Consultar" if is_view else " - Editar"),
+                "module": module,
                 "id": id,
                 "error": "Corrige los errores del formulario"
             })
@@ -234,10 +234,11 @@ def module_view_reg_view(request, module_id: str, id: int):
             pass
 
     if not registro:
-        return render(request, "modulos/consulta.html", {
+        return render(request, "core/modules/module_new_reg.html", {
             "error": "Registro no encontrado",
-            "titulo": module["nombre"],
-            "modulo": module
+            "titulo_topbar": module["nombre"] + (" - Consultar" if is_view else " - Editar"),
+            "modulo": module,
+            "id": id,
         })
 
     FormCab = build_dynamic_form(campos_cab, company, cab_id)
@@ -312,7 +313,7 @@ def module_view_reg_view(request, module_id: str, id: int):
     return render(request, "core/modules/module_new_reg.html", {
         "form": form_cab,
         "formularios_detalle": formularios_detalle,
-        "titulo": module["nombre"],
+        "titulo_topbar": module["nombre"] + (" - Consultar" if is_view else " - Editar"),
         "moduloId": module["_id"],
         "module": module,
         "id": id,

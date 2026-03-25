@@ -14,7 +14,6 @@ from core.services.modules.model_validator_service import (
 
 @require_POST
 def validate_model_view(request, module_id: str):
-    print("--- validate_model_view (module_id:", module_id, ") ---")
     """
     Endpoint de desarrollo:
     Valida el modelo Mongo usando ModelValidatorService
@@ -35,10 +34,6 @@ def validate_model_view(request, module_id: str):
             module_id=module_id,
             is_raw=True,
         )
-        print("------------------------------------")
-        print("Modelo obtenido para validación: Cantidad:")
-        print(len(models)     )
-        print("------------------------------------")
 
         if not models:
             return JsonResponse(
@@ -49,7 +44,6 @@ def validate_model_view(request, module_id: str):
         # 2️⃣ Validar modelo
         result_for_model = {}
         for model in models:
-            print("Modelo:", model["_id"], "Campos:", len(model.get("campos", [])))
             validation_result = ModelValidatorService.validate(model)
             result_for_model[model["_id"]] = validation_result
 
