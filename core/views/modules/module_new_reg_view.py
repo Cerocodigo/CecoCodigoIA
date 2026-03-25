@@ -120,7 +120,7 @@ def module_new_reg_view(request, module_id: str):
                     "forms": [fDet["form"]()]
                 } for fDet in FormsDetalle
             ],
-            "titulo": module["nombre"],
+            "titulo_topbar": module["nombre"] + " - Nuevo registro",
             "module": module,
             "success": "estructura actualizada correctamente",    
             "empresa": company,

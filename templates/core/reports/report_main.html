@@ -34,6 +34,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    const STATIC_ICONS = {
+        sin: "{% static 'core/icons/ReporteSinDetalle.png' %}",
+        con: "{% static 'core/icons/ReporteConDetalle.png' %}"
+    };
+</script>
 <script src="{% static 'core/js/reports/report_main.js' %}"></script>
 <script src="{% static 'core/js/reports/create_excel_report.js' %}"></script>
 <script src="{% static 'core/js/reports/create_pdf_report.js' %}"></script>

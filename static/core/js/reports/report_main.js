@@ -21,6 +21,17 @@ $(document).ready(function () {
     $(document).on("click", "#btn-export-pdf", function () {
         exportToPdf();
     });
+    $(document).on("change", "#chk-export-subniveles", function () {
+
+        const isChecked = $(this).is(":checked");
+
+        const text = isChecked
+            ? "Exportar con detalle"
+            : "Exportar sin detalle";
+
+        $("#switch-label-text").text(text);
+
+    });
 
 });
 
@@ -126,35 +137,48 @@ function renderMainTable() {
                     Reporte: ${report_data.meta.nombre}
                 </h5>
 
-                <div class="d-flex flex-column align-items-start">
-
-                    <!-- Botones -->
-                    <div class="d-flex">
-
-                        <button id="btn-export-excel"
-                                class="btn btn-sm btn-success mr-2">
-                            <i class="fas fa-file-excel"></i>
-                            Generar Excel
-                        </button>
-
-                        <button id="btn-export-pdf"
-                                class="btn btn-sm btn-danger">
-                            <i class="fas fa-file-pdf"></i>
-                            Generar PDF
-                        </button>
-
+                <div class="d-flex align-items-center">
+                <!-- Botones -->
+                    <div class="d-flex"> 
+                        <button id="btn-export-excel" class="btn btn-sm btn-success mr-2" style="padding: 10px 20px;font-weight: bold;font-size: 15px;"> 
+                            <i class="fas fa-file-excel"></i> 
+                                Generar Excel 
+                        </button> 
+                        <button id="btn-export-pdf" class="btn btn-sm btn-danger" style="padding: 10px 20px;font-weight: bold;font-size: 15px;"> 
+                            <i class="fas fa-file-pdf"></i> 
+                            Generar PDF 
+                        </button> 
                     </div>
+                    <!-- Switch + iconos -->
+                    <div class="d-flex flex-column align-items-center mr-4" style="margin-left: 20px;">
+                        <div class="d-flex align-items-center">
+                            <img src="${STATIC_ICONS.sin}"
+                                width="35"
+                                class="icon-sin"
+                                title="Sin subniveles">
 
-                    <!-- Checkbox -->
-                    <div class="form-check mt-2">
-                        <input type="checkbox"
-                            class="form-check-input"
-                            id="chk-export-subniveles">
+                            <div class="custom-control custom-switch custom-switch-lg mx-2">
+                                <input type="checkbox"
+                                    class="custom-control-input"
+                                    id="chk-export-subniveles">
 
-                        <label class="form-check-label small"
-                            for="chk-export-subniveles" style="font-weight: bold;">
-                            Exportar con subniveles
-                        </label>
+                                <label class="custom-control-label"
+                                    for="chk-export-subniveles">
+                                </label>
+                            </div>
+
+                            <img src="${STATIC_ICONS.con}"
+                                width="35"
+                                class="icon-con"
+                                title="Con subniveles">
+
+                        </div>
+
+                        <small id="switch-label-text"
+                            class="mt-1 font-weight-bold text-muted">
+                            Exportar sin detalle
+                        </small>
+
                     </div>
 
                 </div>

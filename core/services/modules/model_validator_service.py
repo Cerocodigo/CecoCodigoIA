@@ -18,7 +18,6 @@ class ModelValidatorService:
 
     @classmethod
     def validate(cls, model_json):
-        print("Validando modelo...")
         errors = []
 
         data = cls._validate_json(model_json, errors)
@@ -59,8 +58,10 @@ class ModelValidatorService:
             return json.loads(model_json)
         except Exception:
             errors.append({
-                "path": "",
-                "message": "JSON inválido"
+                "tipoError": "JSON inválido",
+                "ubicacion": "modelo completo",
+                "elemento": "JSON inválido",
+                "sugerenciaCorreccion": "Asegúrate de que el modelo sea un JSON válido"
             })
             return None
 
@@ -99,8 +100,10 @@ class ModelValidatorService:
             val = data.get(key)
             if val and not re.match(r"^[a-z0-9_]+$", val):
                 errors.append({
-                    "path": key,
-                    "message": "Debe ser slug válido (minúsculas, números y _)"
+                    "tipoError": "Slug inválido",
+                    "ubicacion": key,
+                    "elemento": val,
+                    "sugerenciaCorreccion": "Debe ser slug válido (minúsculas, números y _)"
                 })
 
         campos = data.get("campos", [])
@@ -109,16 +112,20 @@ class ModelValidatorService:
         # PK obligatorio
         if data.get("pk") not in nombres:
             errors.append({
-                "path": "pk",
-                "message": "El pk debe existir en los campos"
+                "tipoError": "PK inválido",
+                "ubicacion": "pk",
+                "elemento": data.get("pk"),
+                "sugerenciaCorreccion": "El pk definido en el modelo debe existir en los campos"
             })
 
         # FK obligatorio en detalle
         if data.get("rol") == "detalle":
             if data.get("fk") not in nombres:
                 errors.append({
-                    "path": "fk",
-                    "message": "El fk debe existir en los campos del modelo detalle"
+                    "tipoError": "FK inválido",
+                    "ubicacion": "fk",
+                    "elemento": data.get("fk"),
+                    "sugerenciaCorreccion": "El fk definido en el modelo detalle debe existir en los campos"
                 })
 
     # =========================
@@ -164,31 +171,39 @@ class ModelValidatorService:
             nombre = campo.get("nombre")
             if nombre in nombres:
                 errors.append({
-                    "path": f"{path}.nombre",
-                    "message": "Nombre duplicado"
+                    "tipoError": "Nombre duplicado",
+                    "ubicacion": f"{path}.nombre",
+                    "elemento": nombre,
+                    "sugerenciaCorreccion": "Cada campo debe tener un nombre único"
                 })
             nombres.add(nombre)
 
             # tipo_base válido
             if campo.get("tipo_base") not in SQL_TYPES_KEYS:
                 errors.append({
-                    "path": f"{path}.tipo_base",
-                    "message": "tipo_base inválido"
+                    "tipoError": "tipo_base inválido",
+                    "ubicacion": f"{path}.tipo_base",
+                    "elemento": campo.get("tipo_base"),
+                    "sugerenciaCorreccion": "Utiliza uno de los tipo_base permitidos"
                 })
 
             # tipo_funcional válido
             if campo.get("tipo_funcional") not in CECOD_TYPES:
                 errors.append({
-                    "path": f"{path}.tipo_funcional",
-                    "message": "tipo_funcional inválido"
+                    "tipoError": "tipo_funcional inválido",
+                    "ubicacion": f"{path}.tipo_funcional",
+                    "elemento": campo.get("tipo_funcional"),
+                    "sugerenciaCorreccion": "Utiliza uno de los tipo_funcional permitidos"
                 })
 
             # orden único por área
             key = (campo.get("area"), campo.get("orden"))
             if key in orden_area:
                 errors.append({
-                    "path": f"{path}.orden",
-                    "message": "Orden duplicado en la misma área"
+                    "tipoError": "Orden duplicado",
+                    "ubicacion": f"{path}.orden",
+                    "elemento": campo.get("orden"),
+                    "sugerenciaCorreccion": "Cambia el orden en los campos que tienen valores duplicados perteneciendo a la misma área"
                 })
             orden_area.add(key)
 
@@ -196,8 +211,10 @@ class ModelValidatorService:
             if data.get("rol") == "detalle":
                 if campo.get("area") != "main":
                     errors.append({
-                        "path": f"{path}.area",
-                        "message": "En modelos detalle solo se permite area 'main'"
+                        "tipoError": "Área inválida",
+                        "ubicacion": f"{path}.area",
+                        "elemento": campo.get("area"),
+                        "sugerenciaCorreccion": "En modelos detalle solo se permite area 'main'"
                     })
 
     # =========================
@@ -226,8 +243,10 @@ class ModelValidatorService:
 
         if not isinstance(data, dict):
             errors.append({
-                "path": path,
-                "message": "Debe ser un objeto"
+                "tipoError": "Tipo inválido",
+                "ubicacion": path,
+                "elemento": data,
+                "sugerenciaCorreccion": "Debe ser un objeto"
             })
             return
 
@@ -238,12 +257,16 @@ class ModelValidatorService:
 
         for m in missing:
             errors.append({
-                "path": f"{path}.{m}" if path else m,
-                "message": "Campo requerido faltante"
+                "tipoError": "Campo requerido faltante",
+                "ubicacion": f"{path}.{m}" if path else m,
+                "elemento": None,
+                "sugerenciaCorreccion": f"Agrega el campo requerido: {m}"
             })
 
         for e in extra:
             errors.append({
-                "path": f"{path}.{e}" if path else e,
-                "message": "Campo no permitido"
+                "tipoError": "Campo no permitido",
+                "ubicacion": f"{path}.{e}" if path else e,
+                "elemento": data.get(e),
+                "sugerenciaCorreccion": f"Elimina el campo no permitido: {e}"
             })
