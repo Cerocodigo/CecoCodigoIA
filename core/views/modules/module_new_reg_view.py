@@ -72,6 +72,7 @@ def module_new_reg_view(request, module_id: str):
     models = ModelQueryService.get_models_for_module(
         company=company,
         module_id=module_id,
+        is_raw=True,
     )
 
     modelo_cab = None
@@ -155,6 +156,7 @@ def calculosReferenciaBuscador(request, modelo, campo):
     models = ModelQueryService.get_models_for_module(
         company=company,
         module_id=modelo,
+        is_raw=True,
     )
 
     if not models:
@@ -277,6 +279,7 @@ def calculosNumeroSecuencial(request, modelo, campo):
     models = ModelQueryService.get_models_for_module(
         company=company,
         module_id=modelo,
+        is_raw=True,
     )
 
     if not models:
@@ -363,6 +366,7 @@ def calculosQueryBaseDatos(request, modelo, campo):
     models = ModelQueryService.get_models_for_module(
         company=company,
         module_id=modelo,
+        is_raw=True,
     )
 
     if not models:

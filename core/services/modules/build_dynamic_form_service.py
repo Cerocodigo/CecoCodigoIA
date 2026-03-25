@@ -1,12 +1,14 @@
 from django import forms
 from django.forms import widgets, Select
 
-from core.db.mysql.services.connection_service import (MySQLCompanyConnectionService,)
+from core.db.mysql.services.connection_service import (
+    MySQLCompanyConnectionService,
+)
 from core.db.mysql.executor import MySQLExecutor
 from core.db.mysql.services.dml_service import MySQLDMLService
 
 
-BASE_FIELD_TYPES  = {
+BASE_FIELD_TYPES = {
     "string": forms.CharField,
     "char": forms.CharField,
     "decimal": forms.DecimalField,
@@ -16,30 +18,29 @@ BASE_FIELD_TYPES  = {
     "date": forms.DateField,
     "datetime": forms.DateTimeField,
     "fecha": forms.DateField,
-    
-}
-
-
-FIELD_TYPES = {
-    "string": forms.CharField,
-    "char": forms.CharField,
-    "decimal": forms.DecimalField,
-    "int": forms.IntegerField,
-    "email": forms.EmailField,
-    "boolean": forms.BooleanField,
-    "date": forms.DateField,
-    "datetime": forms.DateTimeField,
-    "fecha": forms.DateField,
-    
 }
 
 UI_FIELD_TYPES = {
     "image": forms.ImageField,
     "file": forms.FileField,
 }
+
 FK_FIELD_TYPES = {
     "fk": forms.ModelChoiceField
 }
+
+# 🔒 Tipos no editables globales
+NO_EDITABLE_CECOD_TYPES = {
+    "NumeroSecuencial",
+    "SistemaFecha",
+    "SistemaUsuario",
+    "QueryBaseDatos",
+    "Operacion",
+    "FormatoTexto",
+    "Condicional",
+    "FormulaDetalle",
+}
+
 
 def build_dynamic_form(campos, company, modelo):
     form_fields = {}
@@ -62,7 +63,6 @@ def build_dynamic_form(campos, company, modelo):
         break_line = campo.get("break", False)
         area = campo.get("area", "main")
 
-
         # attrs base
         widget_attrs = {
             "id": f"id_{nombre}",
@@ -71,19 +71,23 @@ def build_dynamic_form(campos, company, modelo):
             "data-gap": gap,
             "data-gap-top": gap_top,
             "data-break": "1" if break_line else "0",
-            "data_area": area,
-            "visible":visible,
+            "data-area": area,
+            "visible": visible,
             "data_tipo": tipo_funcional,
             "data-modelo": modelo,
         }
 
+        # 🔒 regla global
+        if tipo_funcional in NO_EDITABLE_CECOD_TYPES:
+            widget_attrs["readonly"] = "readonly"
 
+        # ====================================================
         # 🔽 OPCIÓN MÚLTIPLE
+        # ====================================================
         if tipo_funcional == "OpcionMultiple":
             opciones = configuracion.get("opciones", [])
             labels = configuracion.get("labels", {})
             choices = [(op, labels.get(op, op)) for op in opciones]
-            
 
             form_fields[nombre] = forms.ChoiceField(
                 label=etiqueta,
@@ -91,43 +95,42 @@ def build_dynamic_form(campos, company, modelo):
                 required=requerido,
                 initial=configuracion.get("valor_predeterminado"),
                 widget=forms.Select(attrs={
-                    "class": "form-select form-control-erp",   # 👈 AQUÍ
+                    "class": "form-select form-control-erp",
                     "data-col": col,
                     "data-gap": gap,
                     "data-gap-top": gap_top,
                     "data-break": "1" if break_line else "0",
-                    "data_area": area,
-                    "style": 'width: 100%',
+                    "data-area": area,
+                    "style": "width: 100%",
                     "data_tipo": tipo_funcional,
-
                 })
             )
             continue
 
-
+        # ====================================================
+        # 🔽 REFERENCIA BUSCADOR
+        # ====================================================
         if tipo_funcional == "ReferenciaBuscador":
-            tipo_base = 'string'
-            widget_attrs["data-label_field"] = configuracion['label_field']
-            widget_attrs["data-value_field"] = configuracion['value_field']
-            if 'parametros' in  configuracion:
-                parametros = configuracion['parametros'].split(',')
-                for parametro in parametros:
-                    widget_attrs["data-variables"] = parametro.split('=')[1]
+            tipo_base = "string"
+
+            widget_attrs["data-label_field"] = configuracion.get("label_field")
+            widget_attrs["data-value_field"] = configuracion.get("value_field")
+
+            if "parametros" in configuracion:
+                parametros = configuracion["parametros"].split(",")
+                widget_attrs["data-variables"] = ",".join(
+                    [p.split("=")[1] for p in parametros]
+                )
             else:
-                widget_attrs["data-variables"] = ''
-            if 'valor_inicial' in  configuracion:
-                widget_attrs["data-valorinicial"] = configuracion['valor_inicial']
-            else:
-                widget_attrs["data-valorinicial"] = ''
+                widget_attrs["data-variables"] = ""
 
+            widget_attrs["data-valorinicial"] = configuracion.get("valor_inicial", "")
 
-
+        # ====================================================
         # 🔽 REFERENCIA
+        # ====================================================
         if tipo_funcional == "Referencia":
-            opciones = obtener_opciones_sql(company, configuracion)
-
-            choices = opciones[0]
-            extra_data = opciones[1]
+            choices, extra_data = obtener_opciones_sql(company, configuracion)
 
             widget_attrs.update({
                 "class": "form-select form-control-erp",
@@ -139,35 +142,25 @@ def build_dynamic_form(campos, company, modelo):
                 label=etiqueta,
                 required=requerido,
                 choices=choices,
-                widget=SelectWithData(
-                    attrs=widget_attrs,
-                    extra_data=extra_data
-                )
+                widget=SelectWithData(attrs=widget_attrs, extra_data=extra_data)
             )
-
             continue
 
         # ====================================================
-        # 📎 REFERENCIA ADJUNTO (INPUT AUTO)
+        # 📎 REFERENCIA ADJUNTO (CORREGIDO)
         # ====================================================
         if tipo_funcional == "ReferenciaAdjunto":
 
-            ref = configuracion.get("referencia")          # TarifaIva
-            campo_origen = configuracion.get("campo_origen")  # Porcentaje
+            ref = configuracion.get("referencia")
+            campo_origen = configuracion.get("campo_origen")
 
+            if configuracion.get("editable") == "No":
+                widget_attrs["readonly"] = "readonly"
 
             widget_attrs.update({
-                "readonly": "readonly",
-                "data-ref-from": f"id_{ref}",               # 🔑
-                "data-ref-key": campo_origen,        # 🔑
+                "data-ref-from": f"id_{ref}",
+                "data-ref-key": campo_origen,
             })
-
-            form_fields[nombre] = forms.CharField(
-                label=etiqueta,
-                required=False,
-                widget=forms.TextInput(attrs=widget_attrs)
-            )
-
 
             field_class = BASE_FIELD_TYPES.get(tipo_base, forms.CharField)
 
@@ -191,64 +184,25 @@ def build_dynamic_form(campos, company, modelo):
             form_fields[nombre] = field_class(**kwargs)
             continue
 
+        # ====================================================
+        # 🔽 CONFIGURACIONES ESPECIALES
+        # ====================================================
         if tipo_funcional == "NumeroSimple":
-            kwargs["min_value"] = validacion.get("min")
-            kwargs["decimal_places"] = validacion.get("decimales", 2)
-
-        if tipo_funcional == "NumeroSecuencial":
-            widget_attrs["readonly"] = "readonly"
-
-
-
-        if tipo_funcional == "QueryBaseDatos":
-            widget_attrs["readonly"] = "readonly"
-            if 'parametros' in  configuracion:
-                parametros = configuracion['parametros'].split(',')
-                for parametro in parametros:
-                    widget_attrs["data-variables"] = parametro.split('=')[1]
-            else:
-                widget_attrs["data-variables"] = ''
-    
-
-        if tipo_funcional == "SistemaFecha":
-            widget_attrs["readonly"] = "readonly"
-
-        if tipo_funcional == "SistemaUsuario":
-            widget_attrs["readonly"] = "readonly"
-
-        if tipo_funcional == "Operacion":
-            widget_attrs["readonly"] = "readonly"
-            widget_attrs["data-formula"] = configuracion['formula']
-            
-        if tipo_funcional == "Condicional":
-            widget_attrs["readonly"] = "readonly"
-            widget_attrs["data-condiciones"] = configuracion['condiciones']
-            widget_attrs["data-si_no"] = configuracion['si_no']
-
-
-        if tipo_funcional == "FormatoTexto":
-            widget_attrs["readonly"] = "readonly"
-            widget_attrs["data-template"] = configuracion['template']
-            widget_attrs["data-padding"] = configuracion['padding']
-
+            widget_attrs["data-min"] = validacion.get("min")
+            widget_attrs["data-decimales"] = validacion.get("decimales", 2)
 
         if tipo_funcional == "TextoSimple":
-            if configuracion['editable'] == 'No':
+            if configuracion.get("editable") == "No":
                 widget_attrs["readonly"] = "readonly"
 
-            widget_attrs["data-unico"] = configuracion['unico']
-    
+            widget_attrs["data-unico"] = configuracion.get("unico")
+
         if tipo_funcional == "Archivo":
-
-            tipos_permitidos = configuracion.get("acepta_archivo", "cualquiera")
-            tamano_max = configuracion.get("tamano_max_mb", 10)
-
             widget_attrs.update({
                 "class": "form-control form-control-erp",
-                "data_acepta": tipos_permitidos,
-                "data_maxsize": tamano_max,
+                "data_acepta": configuracion.get("acepta_archivo", "cualquiera"),
+                "data_maxsize": configuracion.get("tamano_max_mb", 10),
                 "data_tipo": tipo_funcional,
-
             })
 
             form_fields[nombre] = forms.FileField(
@@ -256,15 +210,34 @@ def build_dynamic_form(campos, company, modelo):
                 required=requerido,
                 widget=forms.ClearableFileInput(attrs=widget_attrs)
             )
+            continue
 
+        if tipo_funcional == "Operacion":
+            widget_attrs["data-formula"] = configuracion.get("formula")
 
+        if tipo_funcional == "Condicional":
+            widget_attrs["data-condiciones"] = configuracion.get("condicional", [])
+            widget_attrs["data-si_no"] = configuracion.get("si_no", "")
 
+        if tipo_funcional == "FormatoTexto":
+            widget_attrs["data-template"] = configuracion.get("template")
+            widget_attrs["data-padding"] = configuracion.get("padding")
 
+        if tipo_funcional == "QueryBaseDatos":
+            if "parametros" in configuracion:
+                parametros = configuracion["parametros"].split(",")
+                widget_attrs["data-variables"] = ",".join(
+                    [p.split("=")[1] for p in parametros]
+                )
+            else:
+                widget_attrs["data-variables"] = ""
+
+        # ====================================================
         # 🔽 CAMPOS NORMALES
+        # ====================================================
         field_class = BASE_FIELD_TYPES.get(tipo_base)
         if not field_class:
             continue
-
 
         kwargs = {
             "label": etiqueta,
@@ -272,50 +245,44 @@ def build_dynamic_form(campos, company, modelo):
             "widget": field_class.widget(attrs=widget_attrs)
         }
 
-        # decimal
         if tipo_base == "decimal":
             kwargs["decimal_places"] = validacion.get("decimales", 2)
             kwargs["max_digits"] = 18
             kwargs["min_value"] = validacion.get("min")
             kwargs["max_value"] = validacion.get("max")
 
-        # int
         if tipo_base == "int":
             kwargs["min_value"] = validacion.get("min")
             kwargs["max_value"] = validacion.get("max")
 
-        # date
         if tipo_base == "date":
             kwargs["widget"] = widgets.DateInput(
                 attrs={**widget_attrs, "type": "date"}
             )
 
-        # datetime
         if tipo_base == "datetime":
             kwargs["widget"] = widgets.DateTimeInput(
                 attrs={**widget_attrs, "type": "datetime-local"}
             )
 
-        # string
         if tipo_base == "string":
             kwargs["max_length"] = 255
 
         form_fields[nombre] = field_class(**kwargs)
 
-
     return type("DynamicForm", (forms.Form,), form_fields)
 
 
-import pymysql
+# ====================================================
+# 🔽 SQL HELPERS
+# ====================================================
 
 def obtener_opciones_sql(company, campo):
     sql = campo.get("sql")
     value_field = campo.get("value_field")
     label_field = campo.get("label_field")
-    connection = MySQLCompanyConnectionService.get_connection_for_company(
-            company=company
-        )
 
+    connection = MySQLCompanyConnectionService.get_connection_for_company(company=company)
     executor = MySQLExecutor(connection)
     dml = MySQLDMLService(executor)
 
@@ -336,13 +303,10 @@ def obtener_opciones_sql(company, campo):
 
         choices.append((value, label))
 
-        extra = {
-            label_field:row[label_field]
-        }
+        extra = {label_field: label}
         for k, v in row.items():
-            if k in (value_field, label_field):
-                continue
-            extra[k] = v
+            if k not in (value_field, label_field):
+                extra[k] = v
 
         data_map[value] = extra
 
@@ -354,9 +318,7 @@ class SelectWithData(Select):
         self.extra_data = extra_data or {}
         super().__init__(*args, **kwargs)
 
-    def create_option(
-        self, name, value, label, selected, index, subindex=None, attrs=None
-    ):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=subindex, attrs=attrs
         )
