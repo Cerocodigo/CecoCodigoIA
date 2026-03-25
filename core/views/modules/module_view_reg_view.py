@@ -1,6 +1,6 @@
-# core/views/modules/module_main_view.py
+# core/views/modules/module_view_reg_view.py
 # =====================================
-# Vista principal de un módulo
+# Vista principal de un módulo - Visualizar registro
 # =====================================
 
 
@@ -21,12 +21,15 @@ from core.db.mysql.services.dml_service import MySQLDMLService
 
 from core.services.modules.build_dynamic_form_service import (build_dynamic_form,)
 
+from core.services.modules.delete_module_record_service import DeleteModuleRecordService
+
+from core.services.ui.message_service import set_view_msg, pop_view_msg
+
 
 def module_view_reg_view(request, module_id: str, id: int):
-    print("module_view_reg_view called with module_id:", module_id, "and id:", id)
     """
     Vista principal del módulo:
-    /module/<module_id>/view/
+    /module/<module_id>/view/<id>/
     """
 
     # =========================
@@ -54,6 +57,14 @@ def module_view_reg_view(request, module_id: str, id: int):
         company=request.company_ctx,
         is_active=True
     ).first()
+
+    # =========================
+    # Modo de la vista (VIEW / EDIT)
+    # =========================
+    url_name = request.resolver_match.url_name
+
+    is_view = url_name == "module_view_reg_view"
+    is_edit = url_name == "module_edit_reg_view"
 
     
     # =========================
@@ -89,6 +100,10 @@ def module_view_reg_view(request, module_id: str, id: int):
     campos_cab = [c for c in Modelo["campos"] if c.get("activo", True)]
     cab_id = Modelo["_id"]
 
+    # Bloquear edición en modo solo lectura
+    if request.method == "POST" and is_view:
+        raise Http404("No permitido en modo vista")
+
     # =====================================================
     # ======================= POST =======================
     # =====================================================
@@ -103,27 +118,20 @@ def module_view_reg_view(request, module_id: str, id: int):
 
         # ---------- DELETE ----------
         if accion == "eliminar":
-            try:
-                with dml.transaction():
-                    for det in modelos_det:
-                        sql = f"DELETE FROM {det['tabla']} WHERE {det['fk']} = %s"
-                        dml.delete(sql, (id,))
-                        # cursor.execute(sql, (id,))
 
-                    sql = f"DELETE FROM {tabla_cab} WHERE {pk} = %s"
-                    dml.delete(sql, (id,))
-                    # cursor.execute(sql, (id,))   
+            success, error = DeleteModuleRecordService.execute(
+                company=company,
+                module_id=module_id,
+                record_id=id
+            )
 
-                    return redirect(
-                        "modulo_form",
-                        modulo=module["_id"]
-                    )
-            except Exception as e:
-                return render(request, "modulos/consulta.html", {
-                    "error": f"Error al eliminar: {str(e)}",
-                    "titulo": module["nombre"],
-                    "modulo": module
-                })
+            if success:
+                set_view_msg(request, "success", "Registro eliminado correctamente")
+                return redirect("core:module_main", module_id=module_id)
+            else:
+                set_view_msg(request, "danger", f"Error al eliminar: {error}")
+                return redirect("core:module_view_reg_view", module_id=module_id, id=id)
+
                 
 
         # ---------- UPDATE ----------
@@ -173,13 +181,11 @@ def module_view_reg_view(request, module_id: str, id: int):
                 WHERE {pk} = %s
             """
             dml.update(sql, valores)
-            # cursor.execute(sql, valores)
 
             # ---- DELETE + INSERT DETALLES ----
             for det in modelos_det:
                 sql = f"DELETE FROM {det['tabla']} WHERE {det['fk']} = %s"
                 dml.delete(sql, (id,))
-                # cursor.execute(sql, (id,))
 
             for f in forms_detalle:
                 modelo_det = f["modelo"]
@@ -201,9 +207,6 @@ def module_view_reg_view(request, module_id: str, id: int):
                     VALUES ({','.join(['%s'] * len(valores))})
                 """
                 dml.insert(sql, valores)
-                # cursor.execute(sql, valores)
-
-            # mysql.commit()
 
             return redirect(
                 "modulo_form",
@@ -250,6 +253,10 @@ def module_view_reg_view(request, module_id: str, id: int):
 
     form_cab = FormCab(initial=initial_cab)
 
+    if is_view:
+        for field in form_cab.fields.values():
+            field.disabled = True
+
     formularios_detalle = []
 
     for det in modelos_det:
@@ -272,27 +279,83 @@ def module_view_reg_view(request, module_id: str, id: int):
         forms = []
 
         for i, row in enumerate(rows):
-            forms.append(
-                FormDet(initial=row, prefix=f"{det['tabla']}_{i}")
-            )
+            form_instance = FormDet(initial=row, prefix=f"{det['tabla']}_{i}")
+
+            if is_view:
+                for field in form_instance.fields.values():
+                    field.disabled = True
+
+            forms.append(form_instance)
 
         if not forms:
-            forms.append(FormDet(prefix=f"{det['tabla']}_0"))
+            form_instance = FormDet(prefix=f"{det['tabla']}_0")
+
+            if is_view:
+                for field in form_instance.fields.values():
+                    field.disabled = True
+
+            forms.append(form_instance)
 
         formularios_detalle.append({
+            "modelo_id": det["_id"],
             "entidad": det["tabla"],
+            "display": det["display"],
             "forms": forms
         })
-    print("Get Preparado - Renderizando template")
-    # return render(request, "modulos/moduloNuevo.html", {
+
+
+    # =========================
+    # Obtener mensaje flash
+    # =========================
+    view_msg = pop_view_msg(request)
+
     return render(request, "core/modules/module_new_reg.html", {
         "form": form_cab,
         "formularios_detalle": formularios_detalle,
         "titulo": module["nombre"],
         "moduloId": module["_id"],
-        "modulo": module,
+        "module": module,
         "id": id,
         "user": user,
         "company": company,
         "user_role": user_company.role_slug if user_company else "user",
+        "view_msg": view_msg,
+        "is_view": is_view,
+        "is_edit": is_edit,
     })
+
+
+def module_delete_reg_view(request, module_id: str, id: int):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JsonResponse({"success": False, "error": "No autenticado"}, status=401)
+
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except User.DoesNotExist:
+        request.session.flush()
+        return JsonResponse({"success": False, "error": "Sesión inválida"}, status=401)
+
+    company = getattr(request, "company_ctx", None)
+    if not company:
+        return JsonResponse({"success": False, "error": "Empresa no disponible"}, status=400)
+
+    success, error = DeleteModuleRecordService.execute(
+        company=company,
+        module_id=module_id,
+        record_id=id
+    )
+
+    if success:
+        return JsonResponse({
+            "success": True,
+            "message": "Registro eliminado correctamente"
+        })
+    else:
+        return JsonResponse({
+            "success": False,
+            "error": error or "Error desconocido"
+        })

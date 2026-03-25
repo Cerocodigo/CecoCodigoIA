@@ -86,6 +86,21 @@ let filtrosActivos = [];
 let dictColumnasFiltro = {}; // indiceReal -> nombreColumna
 
 document.addEventListener("DOMContentLoaded", function () {
+    // =========================
+    // Auto cerrar alertas
+    // =========================
+    const alert = document.getElementById("moduleAlert");
+    if (alert) {
+        setTimeout(() => {
+            alert.classList.remove("show");
+
+            setTimeout(() => {
+                alert.remove();
+            }, 300);
+
+        }, 2500);
+    }
+
     if (typeof $ === "undefined" || !$.fn.DataTable) {
         console.warn("DataTables no está cargado.");
         return;
@@ -504,4 +519,89 @@ function normalizarTexto(valor) {
         .replace(/[\u0300-\u036f]/g, "")   // elimina diacríticos
         .toLowerCase()
         .trim();
+}
+
+
+
+/* ============================================================
+   Eliminar registro desde tabla
+============================================================ */
+
+document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-delete-reg");
+
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const moduleId = btn.dataset.module;
+
+    if (!id || !moduleId) {
+        alert("Error: datos inválidos");
+        return;
+    }
+
+    if (!confirm("¿Seguro que deseas eliminar este registro?")) {
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/module/${moduleId}/delete/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.success) {
+                mostrarAlerta("success", data.message);
+
+                // eliminar fila correctamente en DataTable
+                const row = btn.closest("tr");
+
+                if (moduleDataTable && row) {
+                    moduleDataTable
+                        .row(row)
+                        .remove()
+                        .draw(false);
+                }
+
+            } else {
+                mostrarAlerta("danger", data.error || "Error al eliminar");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i>';
+            }
+
+        })
+        .catch(error => {
+            console.error("Error eliminando:", error);
+            mostrarAlerta("danger", "Error de comunicación con el servidor");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash"></i>';
+        });
+});
+
+
+function mostrarAlerta(tipo, mensaje) {
+
+    const container = document.querySelector(".container-fluid");
+
+    if (!container) return;
+
+    const alert = document.createElement("div");
+
+    alert.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alert.innerText = mensaje;
+
+    container.prepend(alert);
+
+    setTimeout(() => {
+        alert.classList.remove("show");
+
+        setTimeout(() => {
+            alert.remove();
+        }, 300);
+    }, 3000);
 }
