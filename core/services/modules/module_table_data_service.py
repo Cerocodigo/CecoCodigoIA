@@ -130,7 +130,6 @@ class ModuleTableDataService:
                 ...
             ]
 
-        - Oculta columna PK (id_*)
         - Separa pk del resto de valores
         - Serializa fechas
         - Traduce OpcionMultiple usando labels

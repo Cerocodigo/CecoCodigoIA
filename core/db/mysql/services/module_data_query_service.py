@@ -26,8 +26,8 @@ class ModuleDataQueryService:
         """
         Construye lista de columnas SQL considerando:
 
-        - Siempre incluir id_*
-        - Solo incluir visible=True (excepto id)
+        - Siempre incluir campo con "tipo_base": "pk" aunque visible=False
+        - Solo incluir visible=True (excepto pk)
         - Ordenar primero area="main"
         - Luego area="side"
         - Orden ascendente por campo["orden"]
@@ -38,7 +38,7 @@ class ModuleDataQueryService:
 
         main_fields = []
         side_fields = []
-        id_field = None
+        pk_field = None
 
         for campo in campos:
             nombre = campo.get("nombre")
@@ -46,8 +46,8 @@ class ModuleDataQueryService:
             visible = campo.get("visible", True)
             orden = campo.get("orden", 0)
 
-            if nombre.lower().startswith("id_"):
-                id_field = nombre
+            if campo.get("tipo_base") == "pk":
+                pk_field = nombre
                 continue
 
             if not visible:
@@ -64,9 +64,9 @@ class ModuleDataQueryService:
 
         ordered_columns = []
 
-        # Siempre primero el ID si existe
-        if id_field:
-            ordered_columns.append(id_field)
+        # Siempre primero el PK si existe
+        if pk_field:
+            ordered_columns.append(pk_field)
 
         # Luego main
         ordered_columns.extend([nombre for _, nombre in main_fields])

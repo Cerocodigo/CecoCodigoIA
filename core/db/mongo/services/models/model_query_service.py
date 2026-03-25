@@ -35,7 +35,7 @@ class ModelQueryService:
         return db["modelos"]
 
     @staticmethod
-    def get_models_for_module(*, company, module_id: str) -> list[dict]:
+    def get_models_for_module(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
         """
         Devuelve todos los modelos activos
         asociados a un módulo.
@@ -56,13 +56,14 @@ class ModelQueryService:
         )
 
         # Normalizamos _id a string
-        for model in models:
-            model["id"] = str(model["_id"])
+        if not is_raw:
+            for model in models:
+                model["id"] = str(model["_id"])
 
         return models
 
     @staticmethod
-    def get_models_for_module_rol(*, company, module_id: str, module_rol: str) -> list[dict]:
+    def get_models_for_module_rol(*, company, module_id: str, module_rol: str, is_raw: bool = False) -> list[dict]:
         """
         Devuelve todos los modelos activos
         asociados a un módulo y un rol específico.
@@ -85,13 +86,14 @@ class ModelQueryService:
         )
 
         # Normalizamos _id a string
-        for model in models:
-            model["id"] = str(model["_id"])
+        if not is_raw:
+            for model in models:
+                model["id"] = str(model["_id"])
 
         return models
 
     @staticmethod
-    def get_model_by_id(*, company, model_id: str) -> dict | None:
+    def get_model_by_id(*, company, model_id: str, is_raw: bool = False) -> dict | None:
         """
         Obtiene un modelo específico por su _id.
         """
@@ -105,7 +107,7 @@ class ModelQueryService:
             }
         )
 
-        if model:
+        if model and not is_raw:
             model["id"] = str(model["_id"])
 
         return model

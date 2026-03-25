@@ -49,7 +49,8 @@
             <div class="bg-white py-2 collapse-inner my-collapse-rounded">
                 {% for report in reports %}
                 <!-- path("reports/<str:report_id>/main/",reports_main_view,name="report_main"), -->
-                <a class="collapse-item" href="/reports/{{ report.id }}/main" target="_blank" style="padding-left: 0px;white-space: normal; word-break: break-word;">
+                <a class="collapse-item" href="/reports/{{ report.id }}/main" target="_blank"
+                    style="padding-left: 0px;white-space: normal; word-break: break-word;">
                     <i class="fas fa-file-alt"></i>
                     {{ report.nombre }}
                 </a>
@@ -72,7 +73,7 @@
 
     <hr class="sidebar-divider">
 
-    
+
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOthers">
             <i class="fas fa-fw fa-folder"></i>
@@ -95,13 +96,19 @@
                     Crear PDF
                 </a>
 
-                <a class="collapse-item" href="#" 
-                    onclick="syncModuleSchema('{{ module.id }}'); return false;">
+                <a class="collapse-item" href="#" onclick="syncModuleSchema('{{ module.id }}'); return false;">
                     <i class="fas fa-database"></i>
                     Sincronizar BD
                 </a>
             </div>
         </div>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="validateModel('{{ module.id }}'); return false;">
+            <i class="fas fa-check-circle"></i>
+            Validar modelo
+        </a>
     </li>
 
     <hr class="sidebar-divider d-none d-md-block">

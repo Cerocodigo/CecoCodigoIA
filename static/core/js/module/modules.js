@@ -76,6 +76,36 @@ function syncModuleSchema(moduleId) {
         });
 }
 
+function validateModel(moduleId) {
+    // if (!confirm("¿Validar estructura del modelo?")) return;
+
+    fetch(`/module/${moduleId}/validate-model/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "Content-Type": "application/json",
+        },
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("--------------------------------");
+        console.log("🔍 Resultado validación modelo:");
+        console.log(data["result"]);
+        console.log("--------------------------------");
+
+        for (const [modelId, validation] of Object.entries(data["result"])) {
+            console.log(`Modelo ID: ${modelId}`);
+            console.log("Validación:", validation);
+            console.log("--------------------------------");
+        }
+
+    })
+    .catch(err => {
+        console.error("Error en validación:", err);
+        alert("Error en la validación");
+    });
+}
+
 
 /* ============================================================
    DataTable Initialization

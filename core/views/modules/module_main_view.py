@@ -72,15 +72,20 @@ def module_main_view(request, module_id: str):
         company=company,
         module_id=module_id,
     )
-
+    print("Modelos obtenidos para módulo", module_id, "Cantidad:", len(models))
     for model in models:
-            #? =========================
-            #? Sincronización Mongo → MySQL (Desarrollo)
-            #? =========================
+        #? =========================
+        #? Sincronización Mongo → MySQL (Desarrollo)
+        #? =========================
+        print("------------------------------")
+        print("Sincronizando modelo MongoDB → MySQL para modelo:", model["id"])
+        try:
             UpdateModelMySQLSchemaService.update_schema_for_model(
                     company=company,
                     model_id=model["id"],
                 )
+        except Exception as e:
+            print("Error al sincronizar modelo:", model["id"], "Error:", str(e))
 
     # =========================
     # Datos MySQL del módulo
