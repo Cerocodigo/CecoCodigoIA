@@ -43,6 +43,7 @@
     <!-- ========================= -->
     {% block core_css %}{% endblock %}
     {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/dashboard/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/module/modules.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/reports/reports.css' %}">
     {% endblock %}
@@ -168,6 +169,17 @@
     <!-- SB Admin 2 JS -->
     <!-- ========================= -->
     <script src="{% static 'core/vendor/sb-admin-2/js/sb-admin-2.min.js' %}"></script>
+    
+    <!-- ========================= -->
+    <!-- ECharts -->
+    <!-- ========================= -->
+    <script src="{% static 'shared/vendor/echarts/echarts.min.js' %}"></script>
+    
+    <!-- ========================= -->
+    <!-- Chart.js -->
+    <!-- ========================= -->
+    <script src="{% static 'shared/vendor/chartjs/chart.js' %}"></script>
+
 
     <!-- ========================= -->
     <!-- JS compartido del sistema -->

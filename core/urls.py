@@ -21,6 +21,8 @@ from core.views.reports.create_report_view import create_report_view
 from core.views.reports.execute_report_view import execute_report_view
 # from core.views.reports.reports_main_view import reports_main_view
 
+from core.views.dashboards.dashboard_charts_view import dashboards_charts_view
+
 app_name = "core"
 
 urlpatterns = [
@@ -57,5 +59,8 @@ urlpatterns = [
 
     # path("reports/create/", reports_main_view, name="create_reports"),
     path("reports/api/create/", create_report_view, name="api_create_report"),
+
+    # Dashboard - Charts API
+    path("dashboards/api/charts/", dashboards_charts_view, name="dashboards_charts_api"),
     
 ]
