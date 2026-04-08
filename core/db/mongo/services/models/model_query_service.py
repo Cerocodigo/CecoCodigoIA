@@ -158,3 +158,51 @@ class ModelQueryService:
         collection.insert_one(document)
 
         return document
+
+    @staticmethod
+    def replace_model(*, company, old_model_id: str, new_model: dict):
+        """
+        Reemplaza completamente un modelo:
+        - elimina el anterior
+        - inserta el nuevo
+
+        VALIDACIONES:
+        - garantiza que el delete ocurrió
+        """
+
+        collection = ModelQueryService.get_collection(company)
+
+        if not old_model_id:
+            raise ValueError("old_model_id es requerido")
+
+        if not isinstance(new_model, dict):
+            raise ValueError("new_model debe ser dict")
+
+        if "_id" not in new_model:
+            raise ValueError("new_model debe contener _id")
+
+        # =========================
+        # 1. DELETE
+        # =========================
+        delete_result = collection.delete_one({
+            "_id": old_model_id
+        })
+
+        if delete_result.deleted_count != 1:
+            raise ValueError(
+                f"No se pudo eliminar modelo original: {old_model_id}"
+            )
+
+        # =========================
+        # 2. INSERT
+        # =========================
+        insert_result = collection.insert_one(new_model)
+
+        if not insert_result.inserted_id:
+            raise RuntimeError("Error insertando nuevo modelo")
+
+        return {
+            "old_id": old_model_id,
+            "new_id": new_model["_id"],
+            "replaced": True,
+        }

@@ -4,7 +4,7 @@
 # (Versión alineada a nueva estandarización)
 # ==================================================
 
-from core.services.modules.constants import SQL_TYPES_MAP
+from core.services.modules.constants import SQL_TYPE_META
 
 
 def mongo_field_to_sql(campo: dict) -> str:
@@ -23,7 +23,12 @@ def mongo_field_to_sql(campo: dict) -> str:
     nombre_sql = f"`{nombre}`"
 
     tipo_base = campo.get("tipo_base")
-    sql_type = SQL_TYPES_MAP.get(tipo_base)
+    meta = SQL_TYPE_META.get(tipo_base)
+
+    if not meta:
+        raise ValueError(f"Tipo SQL no soportado: {tipo_base}")
+
+    sql_type = meta["sql"]
 
     if not sql_type:
         raise ValueError(f"Tipo SQL no soportado: {tipo_base}")

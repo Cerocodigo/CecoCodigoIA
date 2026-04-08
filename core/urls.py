@@ -13,13 +13,11 @@ from core.views.modules.module_view_reg_view import (module_view_reg_view, modul
 from core.views.modules.module_new_reg_view import (module_new_reg_view, calculosReferenciaBuscador, calculosNumeroSecuencial, calculosQueryBaseDatos)
 
 from core.views.modules.sync_module_schema_view import (sync_module_schema_view,)
-from core.views.modules.validate_model_view import validate_model_view
 
 from core.views.reports.reports_main_view import reports_main_view
 
 from core.views.reports.create_report_view import create_report_view
 from core.views.reports.execute_report_view import execute_report_view
-# from core.views.reports.reports_main_view import reports_main_view
 
 app_name = "core"
 
@@ -46,9 +44,9 @@ urlpatterns = [
     path("module/<slug:module_id>/delete/<int:id>/", module_delete_reg_view, name="module_delete_reg_view"),
 
     
-    # Endpoint de desarrollo para sincronizar esquema MySQL
-    path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema"),
-    path("module/<slug:module_id>/validate-model/",validate_model_view,name="validate_model"),
+    # # Endpoint de desarrollo para sincronizar esquema MySQL
+    path("module/<slug:module_id>/validate-module/",sync_module_schema_view,name="validate_module",),
+
 
     # Reportes Dinámicos
     
