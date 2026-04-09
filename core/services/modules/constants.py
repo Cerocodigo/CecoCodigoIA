@@ -4,7 +4,6 @@
 # ==================================================
 
 # =========================
-<<<<<<< mejoraValidadorJsonModelos
 # Validación de estructura general de metadata en modelos
 # =========================
 MODEL_REQUIRED_FIELDS = {
@@ -226,7 +225,8 @@ SQL_TYPE_META = {
         "cast": int,
         "sql": "INT",
     },
-=======
+}
+
 # SQL TYPES (Mongo → MySQL)
 # =========================
 SQL_TYPES_MAP = {
@@ -244,7 +244,7 @@ SQL_TYPES_MAP = {
     "date": "DATE",
     "datetime": "DATETIME",
     "time": "TIME",
-    "fk": "INT",
+    "fk": "INT"
 }
 
 # Solo las keys (para validación)
@@ -272,7 +272,6 @@ CECOD_TYPES = {
     "FormulaDetalle",
     "FechaRegistro",
     "LlaveExterna"
->>>>>>> main
 }
 # =========================
 # Para validación rápida de tipos base en campos
@@ -285,7 +284,6 @@ SQL_TYPES_KEYS = set(SQL_TYPE_META.keys())
 # Configuración de campos según tipo funcional (estructura esperada y valores por defecto para config faltante)
 # NOTA: "defaults": None → no es autocorregible, requiere intervención manual
 # =========================
-<<<<<<< mejoraValidadorJsonModelos
 CECOD_CONFIG_META = {
     "TextoSimple": {
         "structure": {"unico", "editable", "valor_predeterminado"},
@@ -332,7 +330,6 @@ CECOD_CONFIG_META = {
             "valor_predeterminado": None,
         },
     },
-
     "Referencia": {
         "structure": {
             "sql",
@@ -343,26 +340,8 @@ CECOD_CONFIG_META = {
             "valor_inicial",
         },
         "defaults": None,
-=======
-CECOD_CONFIG_STRUCTURE = {
-    "TextoSimple": {"unico", "editable", "valor_predeterminado"},
-    "NumeroSimple": {"min", "max"},
-    "NumeroSecuencial": {"inicio", "incremento"},
-    "SistemaFecha": None,
-    "SistemaUsuario": {"modo"},
-    "OpcionMultiple": {"opciones", "labels", "valor_predeterminado"},
-    "Referencia": {
-        "sql",
-        "label_field",
-        "value_field",
-        "campo_principal",
-        #"campos_filtrables",
-        "valor_inicial",
->>>>>>> main
     },
-
     "ReferenciaBuscador": {
-<<<<<<< mejoraValidadorJsonModelos
         "structure": {
             "sql",
             "value_field",
@@ -371,7 +350,6 @@ CECOD_CONFIG_STRUCTURE = {
         },
         "defaults": None,
     },
-
     "ReferenciaAdjunto": {
         "structure": {"referencia", "campo_origen", "editable"},
         "defaults": None,
@@ -409,7 +387,26 @@ CECOD_CONFIG_STRUCTURE = {
         "structure": {"operacion", "campo", "tabla", "condicion"},
         "defaults": None,
     },
-=======
+}
+
+
+
+CECOD_CONFIG_STRUCTURE = {
+    "TextoSimple": {"unico", "editable", "valor_predeterminado"},
+    "NumeroSimple": {"min", "max"},
+    "NumeroSecuencial": {"inicio", "incremento"},
+    "SistemaFecha": None,
+    "SistemaUsuario": {"modo"},
+    "OpcionMultiple": {"opciones", "labels", "valor_predeterminado"},
+    "Referencia": {
+        "sql",
+        "label_field",
+        "value_field",
+        "campo_principal",
+        #"campos_filtrables",
+        "valor_inicial",
+    },
+    "ReferenciaBuscador":{
         "sql",
         "value_field",
         "label_field",
@@ -417,7 +414,6 @@ CECOD_CONFIG_STRUCTURE = {
         "campo_principal",
         "valor_inicial",
         "ModuloIngresoRapido",
-
     },
     "ReferenciaAdjunto": {"referencia", "campo_origen", "editable"},
     "QueryBaseDatos": {"query", "parametros"},
@@ -427,8 +423,5 @@ CECOD_CONFIG_STRUCTURE = {
     "Archivo": {"acepta_archivo", "tamano_max_mb"},
     "FormulaDetalle": {"operacion", "campo", "tabla", "condicion"},
     "FechaRegistro": {"editable"},
-    "LlaveExterna": {"entidad", "campo"},
-    
-    
->>>>>>> main
+    "LlaveExterna": {"entidad", "campo"}
 }
