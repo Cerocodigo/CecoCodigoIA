@@ -149,7 +149,11 @@ class ModelValidatorService:
             "valor_default",
             "placeholder",
             "ayuda",
+            "gap",
+            "gap_top",
+            "break",
         }
+
 
         for i, campo in enumerate(campos):
             cls._validate_exact_keys(campo, required, f"campos[{i}]", errors)
@@ -207,15 +211,15 @@ class ModelValidatorService:
                 })
             orden_area.add(key)
 
-            # regla especial detalle: solo main
-            if data.get("rol") == "detalle":
-                if campo.get("area") != "main":
-                    errors.append({
-                        "tipoError": "Área inválida",
-                        "ubicacion": f"{path}.area",
-                        "elemento": campo.get("area"),
-                        "sugerenciaCorreccion": "En modelos detalle solo se permite area 'main'"
-                    })
+            # regla especial detalle: solo main.. es indiferente el area en detalle
+            # if data.get("rol") == "detalle":
+            #     if campo.get("area") != "main":
+            #         errors.append({
+            #             "tipoError": "Área inválida",
+            #             "ubicacion": f"{path}.area",
+            #             "elemento": campo.get("area"),
+            #             "sugerenciaCorreccion": "En modelos detalle solo se permite area 'main'"
+            #         })
 
     # =========================
     # CONFIG VALIDATION

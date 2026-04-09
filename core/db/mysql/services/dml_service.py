@@ -34,6 +34,14 @@ class MySQLDMLService:
     # INSERT
     # =========================
 
+    def insertDevUltimo(self, sql: str, params: tuple | dict) -> int:
+        cursor = self._execute_dml(
+            sql=sql,
+            params=params,
+            return_cursor=True
+        )
+        return cursor.lastrowid
+    
     def insert(self, sql: str, params: tuple | dict) -> int:
         """
         Ejecuta un INSERT.
@@ -176,35 +184,41 @@ class MySQLDMLService:
     # =========================
     # Ejecutor interno
     # =========================
+    # CORE
+    # =========================
 
-    def _execute_dml(self, *, sql: str, params, fetch):
-        """
-        Flujo único para ejecutar DML.
-        """
+    def _execute_dml(self, sql, params=None, fetch=None, return_cursor=False):
 
         try:
-            # 1️⃣ Validar SQL
+            # ✅ 1. Validar ANTES
             SQLValidator.validate(sql)
 
-            # 2️⃣ Ejecutar
-            if fetch == "one":
-                return self.executor.fetch_one(sql, params)
+            # ✅ 2. Cursor desde conexión
+            with self.executor.connection.cursor() as cursor:
 
-            if fetch == "all":
-                return self.executor.fetch_all(sql, params)
+                cursor.execute(sql, params or ())
 
-            return self.executor.execute(sql, params)
+                # ✅ devolver cursor si se necesita (lastrowid)
+                if return_cursor:
+                    return cursor
+
+                # ✅ SELECT
+                if fetch == "one":
+                    return cursor.fetchone()
+
+                if fetch == "all":
+                    return cursor.fetchall()
+
+                # ✅ INSERT / UPDATE / DELETE
+                return cursor.rowcount
 
         except MySQLIntegrityError:
-            # Violaciones de integridad → propagar
             raise
 
         except MySQLServiceError:
-            # Errores propios → propagar
             raise
 
         except Exception as e:
-            # Normalizar cualquier otro error
             raise MySQLExecutionError(
                 "Error al ejecutar operación DML",
                 original_exception=e,

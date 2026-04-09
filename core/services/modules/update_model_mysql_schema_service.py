@@ -27,6 +27,7 @@ from core.services.modules.column_comparator_service import (
 )
 
 
+
 class UpdateModelMySQLSchemaService:
     """
     Servicio transversal encargado de sincronizar
@@ -50,6 +51,7 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # 1️⃣ Obtener modelo Mongo
         # =========================
+        print("1 Obtener modelo Mongo")
         model = ModelQueryService.get_model_by_id(
             company=company,
             model_id=model_id,
@@ -62,15 +64,24 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # 2️⃣ VALIDAR MODELO
         # =========================
+        print("2 VALIDAR MODELO")
+
         validation = ModelValidatorService.validate(model)
+        print("Validation: ", validation)
+        print("---------------------")
+        
+        for error in validation["errors"]:
+            print(">>>", error)
+
 
         if not validation["is_valid"]:
             error_messages = "\n".join(
-                [f"{e['path']}: {e['message']}" for e in validation["errors"]]
+                [f"Error en : {e['ubicacion']}: Tipo de error: {e['tipoError']}, el elemento {e['elemento']}. La sugerencia es: {e['sugerenciaCorreccion']}" for e in validation["errors"]]
             )
             raise ValueError(
                 f"Modelo inválido. Corrige los siguientes errores:\n{error_messages}"
             )
+            
 
         table_name = model["tabla"]
         campos = model.get("campos", [])
@@ -78,6 +89,7 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # 3️⃣ Infraestructura MySQL
         # =========================
+        print("3 Infraestructura MySQL")
         connection = MySQLCompanyConnectionService.get_connection_for_company(
             company=company
         )
@@ -88,6 +100,7 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # 4️⃣ Verificar si la tabla existe
         # =========================
+        print("4 Verificar si la tabla existe")
         sql_exists = """
             SELECT COUNT(*) AS total
             FROM information_schema.tables
@@ -114,6 +127,7 @@ class UpdateModelMySQLSchemaService:
                 table_name=table_name,
                 columns=list(mongo_columns.values()),
             )
+            print('>>>', sql)
             ddl.create_table(sql)
             return
 
@@ -178,3 +192,6 @@ class UpdateModelMySQLSchemaService:
                     column_name=name,
                 )
                 ddl.alter_table(sql)
+
+
+

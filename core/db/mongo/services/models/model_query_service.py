@@ -61,6 +61,33 @@ class ModelQueryService:
                 model["id"] = str(model["_id"])
 
         return models
+    
+    def get_models_byId(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
+        """
+        Devuelve todos los modelos activos
+        asociados a un módulo.
+
+        Ej:
+        module_id = "clientes"
+        """
+
+        collection = ModelQueryService.get_collection(company)
+
+        models = list(
+            collection.find(
+                {
+                    "_id": module_id,
+                    "activo": True,
+                }
+            )
+        )
+
+        # Normalizamos _id a string
+        if not is_raw:
+            for model in models:
+                model["id"] = str(model["_id"])
+
+        return models
 
     @staticmethod
     def get_models_for_module_rol(*, company, module_id: str, module_rol: str, is_raw: bool = False) -> list[dict]:
