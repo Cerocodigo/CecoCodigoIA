@@ -1,0 +1,13 @@
+prefix=c:/Users/nlubk/Desktop/desarrollo/CeroCodigoIA/CecoCodigoIA/.conda/Library
+exec_prefix=c:/Users/nlubk/Desktop/desarrollo/CeroCodigoIA/CecoCodigoIA/.conda/Library
+libdir=c:/Users/nlubk/Desktop/desarrollo/CeroCodigoIA/CecoCodigoIA/.conda/Library/lib
+sharedlibdir=c:/Users/nlubk/Desktop/desarrollo/CeroCodigoIA/CecoCodigoIA/.conda/Library/lib
+includedir=c:/Users/nlubk/Desktop/desarrollo/CeroCodigoIA/CecoCodigoIA/.conda/Library/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.3.1
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
