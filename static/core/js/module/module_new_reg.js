@@ -54,6 +54,8 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
         .then(data => {
             if (!data.estado || !data.resultados) return;
 
+            
+            refInputActivo = document.getElementById("id_" + data.Campo)
 
             refInputActivo.value = data.resultados[0][refInputActivo.dataset['label_field']]
             refInputActivo.dataset['valor'] = data.resultados[0][refInputActivo.dataset['value_field']]
@@ -65,7 +67,11 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
 
                 tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
                     if (campo.dataset.refFrom === refInputActivo.id) {
-                        campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
+                        if(campo.dataset.refKey in data.resultados[0]){
+                            campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
+                        }else{
+                            campo.value = data.resultados[0][campo.dataset.refKey.toLowerCase()] ?? "0";
+                        }
                         // campo.dispatchEvent(new Event("change")); // opcional
                     }
                 });
@@ -78,7 +84,11 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
                     .forEach(campo => {
 
                         if (campo.dataset.refFrom === refInputActivo.id) {
-                            campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
+                            if(campo.dataset.refKey in data.resultados[0]){
+                                campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
+                            }else{
+                                campo.value = data.resultados[0][campo.dataset.refKey.toLowerCase()] ?? "0";
+                            }
                             //campo.dispatchEvent(new Event("change")); // opcional
                         }
                     });
@@ -201,7 +211,12 @@ function seleccionarReferencia(row) {
 
         tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
             if (campo.dataset.refFrom === refInputActivo.id) {
-                campo.value = row[campo.dataset.refKey] ?? "0";
+
+                if(campo.dataset.refKey in row){
+                    campo.value = row[campo.dataset.refKey] ?? "0";
+                }else{
+                    campo.value = row[campo.dataset.refKey.toLowerCase()] ?? "0";
+                }
                 // campo.dispatchEvent(new Event("change")); // opcional
             }
         });
@@ -214,7 +229,12 @@ function seleccionarReferencia(row) {
             .forEach(campo => {
 
                 if (campo.dataset.refFrom === refInputActivo.id) {
-                    campo.value = row[campo.dataset.refKey] ?? "0";
+
+                    if(campo.dataset.refKey in row){
+                        campo.value = row[campo.dataset.refKey] ?? "0";
+                    }else{
+                        campo.value = row[campo.dataset.refKey.toLowerCase()] ?? "0";
+                    }
                     //campo.dispatchEvent(new Event("change")); // opcional
                 }
             });
@@ -278,7 +298,7 @@ function calcular_Fila(tr) {
             let data_condiciones = campo.dataset.condiciones || '[]';
 
             try {
-                data_condiciones = data_condiciones.replace(/'/g, '"');
+                data_condiciones = data_condiciones.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":').replace(/:\s*'([^']+?)'/g, ': "$1"')             // valores simples
                 data_condiciones = JSON.parse(data_condiciones);
             } catch (e) {
                 console.warn('Condiciones inválidas:', campo.dataset.condiciones);
@@ -360,7 +380,7 @@ function calcularCabecera() {
     const valoresCab = {};
 
     document
-        .querySelectorAll('#cabecera input, #cabecera select, #cabecera textarea')
+        .querySelectorAll('#cabeceraNorte input, #cabeceraNorte select, #cabeceraNorte textarea, #cabeceraSur input, #cabeceraSur select, #cabeceraSur textarea')
         .forEach(campo => {
 
             if (!campo.name) return;
@@ -376,7 +396,7 @@ function calcularCabecera() {
         });
 
     // 2️⃣ Procesar campos operativos
-    document.querySelectorAll('#cabecera input, #cabecera select, #cabecera textarea').forEach(campo => {
+    document.querySelectorAll('#cabeceraNorte input, #cabeceraNorte select, #cabeceraNorte textarea, #cabeceraSur input, #cabeceraSur select, #cabeceraSur textarea').forEach(campo => {
         const tipo = campo.attributes.data_tipo.value;
 
 
@@ -443,8 +463,11 @@ function calcularCabecera() {
             let data_condiciones = campo.dataset.condiciones || '[]';
 
             try {
-                data_condiciones = data_condiciones.replace(/'/g, '"');
+
+                data_condiciones = data_condiciones.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":').replace(/:\s*'([^']+?)'/g, ': "$1"')             // valores simples
+
                 data_condiciones = JSON.parse(data_condiciones);
+
             } catch (e) {
                 console.warn('Condiciones inválidas:', campo.dataset.condiciones);
                 data_condiciones = [];
@@ -585,7 +608,6 @@ document.addEventListener("change", function (e) {
                     calcular_masivoCabecera()
                 }
             }
-
         }
     }
 
@@ -598,14 +620,14 @@ document.addEventListener("change", function (e) {
 
         if (!file) return
 
-        const empresa = document.getElementById("empresa_id").value
+        const empresa = document.getElementById("ccidempresa").value
 
         const formData = new FormData()
         formData.append("archivo", file)
         formData.append("campo", input.name)
         formData.append("empresa", empresa)
 
-        fetch("/subir_archivo/", {
+        fetch("/module/subir_archivo/", {
             method: "POST",
             headers: {
                 "X-CSRFToken": getCookie("csrftoken")
@@ -640,7 +662,59 @@ document.addEventListener("change", function (e) {
 
     }
 
+    //busca aplicar las referencias adjuntos sobre los adjutos del select
+    if (input.tagName === "SELECT") {
+
+        const opt = e.target.options[e.target.selectedIndex];
+        if (!opt) return;
+
+        const fila = e.target.closest('tr');
+        const scope = fila || document;
+
+        scope.querySelectorAll('[data-ref-from]').forEach(el => {
+            if (el.dataset.refFrom === e.target.id) {
+                if(el.dataset.refKey in opt.dataset){
+                    el.value = opt.dataset[el.dataset.refKey] || '';
+                    cambioVariableparaQueary(el.name)
+
+                }else{
+                    console.warn("Referencia no encontrada", {
+                    campo: input,
+                    elemento_id: el.id,
+                    ref_key: el.dataset.refKey,
+                    opciones: opt.dataset
+                    });
+                }
+                
+            }
+        });
+    }
+
+    //revisa si el input fue realizado cobre un dato variable para ejecutar QueryBaseDatos
+
+    cambioVariableparaQueary(e.target.name)
+    calcularCabecera()
 })
+
+
+function cambioVariableparaQueary(campoCambiado){
+
+    if (!campoCambiado) return;
+
+    document.querySelectorAll('[data_tipo="QueryBaseDatos"]').forEach(input => {
+        const variables = input.dataset.variables;
+        if (!variables) return;
+
+        const deps = variables.split(",").map(v => v.trim());
+
+        // ✅ Solo si el campo cambiado es dependencia
+        if (deps.includes(campoCambiado)) {
+            EjecutarQueryBaseDatos(input);
+        }
+    });
+
+}
+
 
 function getCookie(name) {
 
@@ -727,7 +801,7 @@ function fechaHoraLocal() {
 function aplicarMinimoNumerico(el) {
     if (el.type !== 'number') return;
 
-    const min = el.min !== '' ? Number(el.min) : 0;
+    const min = el.dataset.min !== '' ? Number(el.dataset.min) : 0;
     let value = Number(el.value);
 
     if (isNaN(value) || el.value === '') {
@@ -842,24 +916,6 @@ function inicializarDetalles() {
 
 }
 
-/* =========================================================
-   🔗 REFERENCIAS AUTOMÁTICAS (CABECERA + DETALLE)
-========================================================= */
-document.addEventListener('change', e => {
-    if (!e.target.matches('select')) return;
-
-    const opt = e.target.options[e.target.selectedIndex];
-    if (!opt) return;
-
-    const fila = e.target.closest('tr');
-    const scope = fila || document;
-
-    scope.querySelectorAll('[data-ref-from]').forEach(el => {
-        if (el.dataset.refFrom === e.target.id) {
-            el.value = opt.dataset[el.dataset.refKey] || '';
-        }
-    });
-});
 
 /* =========================================================
    🔍 SELECT2
@@ -907,6 +963,7 @@ function EjecutarQueryBaseDatos(input) {
         .then(data => {
             if (data.estado && data.tipo === "QueryBaseDatos") {
                 input.value = data.valor ?? "";
+                calcularCabecera()
             }
         })
         .catch(err => console.error("Error QueryBaseDatos:", err));
@@ -914,13 +971,29 @@ function EjecutarQueryBaseDatos(input) {
 }
 
 
+/* =========================================================
+   🔢 Texto Inicial (⭐ LO IMPORTANTE ⭐)
+========================================================= */
+function inicializarValoresTexto_inicial() {
 
+    
+    document.querySelectorAll('[data_tipo="TextoSimple"]').forEach(input => {
+        if (input.value) return;
+
+        if(input.value ===""){
+            input.value = input.dataset['valor_predeterminado']
+        }
+
+    });
+}
 /* =========================================================
    🔢 Referencia Inicial (⭐ LO IMPORTANTE ⭐)
 ========================================================= */
 function inicializarReferenciasValor_inicial() {
+
+    
     document.querySelectorAll('[data_tipo="ReferenciaBuscador"]').forEach(input => {
-        if (input.value) return;
+        if (input.value.length > 0) return;
 
         const modelo = input.dataset.modelo;
         const campo = input.name || input.dataset.campo;
@@ -989,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarNumerosSecuenciales();
     inicializarDetalles();
     inicializarReferenciasValor_inicial();
+    inicializarValoresTexto_inicial();
 
     // 🔥 aplicar referencias al inicio
     document.querySelectorAll('select[data-ref-source]').forEach(select => {
@@ -1000,19 +1074,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-document.addEventListener("change", function (e) {
-    const campoCambiado = e.target.name || e.target.dataset.campo;
-    if (!campoCambiado) return;
 
-    document.querySelectorAll('[data_tipo="QueryBaseDatos"]').forEach(input => {
-        const variables = input.dataset.variables;
-        if (!variables) return;
 
-        const deps = variables.split(",").map(v => v.trim());
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
 
-        // ✅ Solo si el campo cambiado es dependencia
-        if (deps.includes(campoCambiado)) {
-            EjecutarQueryBaseDatos(input);
+        const inputs = Array.from(document.querySelectorAll("input, select, textarea"));
+        const index = inputs.indexOf(document.activeElement);
+
+        if (index > -1 && index < inputs.length - 1) {
+            inputs[index + 1].focus();
         }
-    });
+    }
 });

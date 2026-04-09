@@ -13,6 +13,7 @@ SQL_TYPES_MAP = {
     "text": "TEXT",
     "int": "INT",
     "integer": "INT",
+    "decimal": "DECIMAL(10,2)",
     "decimal2": "DECIMAL(10,2)",
     "decimal4": "DECIMAL(10,4)",
     "decimal6": "DECIMAL(10,6)",
@@ -46,6 +47,8 @@ CECOD_TYPES = {
     "Condicional",
     "Archivo",
     "FormulaDetalle",
+    "FechaRegistro",
+    "LlaveExterna"
 }
 
 
@@ -58,7 +61,7 @@ CECOD_CONFIG_STRUCTURE = {
     "TextoSimple": {"unico", "editable", "valor_predeterminado"},
     "NumeroSimple": {"min", "max"},
     "NumeroSecuencial": {"inicio", "incremento"},
-    "SistemaFecha": set(),
+    "SistemaFecha": None,
     "SistemaUsuario": {"modo"},
     "OpcionMultiple": {"opciones", "labels", "valor_predeterminado"},
     "Referencia": {
@@ -66,7 +69,7 @@ CECOD_CONFIG_STRUCTURE = {
         "label_field",
         "value_field",
         "campo_principal",
-        "campos_filtrables",
+        #"campos_filtrables",
         "valor_inicial",
     },
     "ReferenciaBuscador": {
@@ -74,6 +77,10 @@ CECOD_CONFIG_STRUCTURE = {
         "value_field",
         "label_field",
         "campos_filtrables",
+        "campo_principal",
+        "valor_inicial",
+        "ModuloIngresoRapido",
+
     },
     "ReferenciaAdjunto": {"referencia", "campo_origen", "editable"},
     "QueryBaseDatos": {"query", "parametros"},
@@ -82,4 +89,8 @@ CECOD_CONFIG_STRUCTURE = {
     "Condicional": {"condicional"},
     "Archivo": {"acepta_archivo", "tamano_max_mb"},
     "FormulaDetalle": {"operacion", "campo", "tabla", "condicion"},
+    "FechaRegistro": {"editable"},
+    "LlaveExterna": {"entidad", "campo"},
+    
+    
 }

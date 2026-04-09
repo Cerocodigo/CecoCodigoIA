@@ -7,6 +7,8 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
 from django.http import JsonResponse
+from django.urls import reverse
+
 import json
 
 from core.db.sqlite.models.user import User
@@ -169,8 +171,9 @@ def module_view_reg_view(request, module_id: str, id: int):
         for campo in campos_cab:
             nombre = campo["nombre"]
             if campo.get("editable", True):
-                sets.append(f"{nombre} = %s")
-                valores.append(form_cab.cleaned_data.get(nombre))
+                if campo.get('tipo_base') != 'pk':
+                    sets.append(f"{nombre} = %s")
+                    valores.append(form_cab.cleaned_data.get(nombre))
 
         valores.append(id)
 
@@ -182,38 +185,16 @@ def module_view_reg_view(request, module_id: str, id: int):
             """
             dml.update(sql, valores)
 
-            # ---- DELETE + INSERT DETALLES ----
-            for det in modelos_det:
-                sql = f"DELETE FROM {det['tabla']} WHERE {det['fk']} = %s"
-                dml.delete(sql, (id,))
 
-            for f in forms_detalle:
-                modelo_det = f["modelo"]
-                fk = modelo_det["fk"]
-
-                campos = []
-                valores = []
-
-                for k, v in f["form"].cleaned_data.items():
-                    campos.append(k)
-                    valores.append(v)
-
-                campos.append(fk)
-                valores.append(id)
-
-                sql = f"""
-                    INSERT INTO {modelo_det['tabla']}
-                    ({','.join(campos)})
-                    VALUES ({','.join(['%s'] * len(valores))})
-                """
-                dml.insert(sql, valores)
-
-            return redirect(
-                "modulo_form",
-                modulo=module["_id"],
-                id=id
+            url = reverse(
+                "core:module_view_reg_view",
+                kwargs={
+                    "module_id":  Modelo["_id"],
+                    "id": id
+                }
             )
 
+            return redirect(url)
     # =====================================================
     # ======================= GET ========================
     # =====================================================

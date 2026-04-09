@@ -30,6 +30,40 @@ Validacion
 -- Validar los json
 -- REvisar todos los campos y validar configuracion- valida que este estructurado corectamente segun tipo de campo y estructura base
 
+estructra de lo modulos
+{
+  "_id": "clientes", "slug válido (minúsculas, números y _)
+  "nombre": "clientes",
+  "uso": "alto",  [alto, medio, bajo] -- determina la ubicacion en el menu alto es proceso principal y bajo es de poco uso
+  "activo": true, bolean
+  "descripcion": "clientes",
+  "entidades": [
+    "clientes"
+  ],
+  "creado_en": {
+    "$date": "2026-01-07T21:42:26.086Z"
+  },
+  "prompt_config": {
+    "enabled": true,
+    "label": "Instrucciones de configuración",
+    "descripcion": "Describe cambios estructurales o de proceso para este módulo"
+  }
+}
+
+estructur de los modelos
+ {
+  "_id": "clientes", -- "slug válido (minúsculas, números y _)
+  "activo": true,  -- bolean
+  "tabla": "clientes", -- nombre de la tabla en mysql
+  "display": "RazonSocial", -- Display en sistema para UI
+  "rol": "maestro",  [maestro, cabecera, detalle]
+  "pk": "ClienteId", -- no puede ser null
+  "fk":"", -- no puede ser null
+  "campo":[] -- Listado array de los campos del modulo
+ "modulo": "clientes" -- modulos._id 
+}
+
+Estructura de los campos en json de modelos
 {
     "visible": true, -- true o false, Especifica si el campo es visible en el formulario
     "nombre": "MedioPago", Texto que represente el Nombre del campo, mismo nombre se utiliza en la Base de datos para la columna de datos que representa
@@ -41,7 +75,7 @@ Validacion
     "orden": 30, -- 0 a 100, determina el orden de los campos en el formulario y view inicial del modulo.
     "col": 6, -- 1 a 12, el ancho del div en el formulario col-md-xx
     "area": "main", -- main o side, determina la posicion en el formulario.
-    "valor_default": null, -- valor predeterminado en base de datos. 
+    "valor_default": "", -- [string, decimal o int]valor predeterminado en base de datos. null no pueder ser
     "placeholder": "", -- texto de ayuda a usaurio corto.
     "ayuda": "" -- Explicacion del campo y para que sirve al usuario.
 }
@@ -54,7 +88,9 @@ SQL_TYPES = {
     "text": "TEXT",
     "int": "INT",
     "integer": "INT",
-    "decimal": "DECIMAL(10,2)", ** Error
+    "decimal": "DECIMAL(10,2)", 
+    "decimal4": "DECIMAL(10,4)", 
+    "decimal6": "DECIMAL(10,6)", 
     "boolean": "TINYINT(1)",
     "date": "DATE",
     "datetime": "DATETIME",
@@ -77,7 +113,11 @@ Cecod_TYPES = [
     "Operacion",
     "FormatoTexto",
     "Condicional",
-    "Archivo"]
+    "Archivo",
+    "FormulaDetalle",
+    "FechaRegistro"
+    "LlaveExterna"
+    ]
     
 Cecod_TYPES_Configuracion = {
     "TextoSimple":{
@@ -86,9 +126,8 @@ Cecod_TYPES_Configuracion = {
         "valor_predeterminado": "BORRADOR" -- Valor con el cual empieza el campo en el formulario
     },
     "NumeroSimple":{
-        "decimales":2, -- Valor numerico de decimales del campo maximo 6,
-        "min":1, -- Valor numerico minimo del campo
-        "max":100, -- Valor numerico maximo del campo
+        "min":1,
+        "max":100
     },
     "NumeroSecuencial":{
         "inicio": 1, --Valor numerico con el cual inicial el campo
@@ -125,7 +164,7 @@ Cecod_TYPES_Configuracion = {
     },
     "ReferenciaAdjunto":{
         "referencia": "Cliente", -- indica el campo Referencia o ReferenciaBuscador sobre el cual se obtiene la info de este campo
-        "campo_origen": "Ruc" -- indica cual es la columna del sql que optiene el valor del campo.
+        "campo_origen": "Ruc" -- indica cual es la columna del sql que optiene el valor del campo. - no  debe haber mayusculas
     },
     "QueryBaseDatos":{
         "query": {
@@ -148,17 +187,32 @@ Cecod_TYPES_Configuracion = {
     },
     "Condicional":{
         "condicional": [
-          {"si": "TipoIdentificacion == 'CEDULA'","entonces": "05"},
-          {"si": "TipoIdentificacion == 'PASAPORTE'","entonces": "06"},
-          {"si": "TipoIdentificacion == 'RUC'","entonces": "04"},
-          {"si": "TipoIdentificacion == 'CONSUMIDOR_FINAL'","entonces": "07"}
-        ] -- define "si" "condicion" es verdadera devuelve valor x
+            {"si":{"campo":"TipoIdentificacion","operador": "==","valor": "CEDULA"}, "entonces": "05"},
+            {"si":{"campo":"TipoIdentificacion","operador": "==","valor": "PASAPORTE"}, "entonces": "06"},
+            {"si":{"campo":"TipoIdentificacion","operador": "==","valor": "RUC"}, "entonces": "04"},
+            {"si":{"campo":"TipoIdentificacion","operador": "==","valor": "CONSUMIDOR_FINAL"}, "entonces": "07"},
+        ] -- define "si" "{condicion}" es verdadera devuelve valor 'entonces'
     },
     "Archivo": {
         "acepta_archivo": "cualquiera",
         "tamano_max_mb": 10
+    },
+    "FormulaDetalle": {
+        "operacion": "SUM", -- de ['SUM', 'COUNT', 'MAX', 'MIN']
+        "campo": Subtotal,
+        "tabla": "VentasFacturasDetalle",
+        "condicion":["TipoIdentificacion == 0"]
+
+    },    
+    "FechaRegistro": {
+        "tiempo": "Si", -- de ['Si', 'No']
+        "editable": "No", -- de ['Si', 'No']
     }
-}
+    "LlaveExterna":{ 
+        "entidad": "VentasFacturas",
+        "campo": "Secuencial"
+    }
+
     
 
 

@@ -33,10 +33,17 @@
                     {% endif %}
 
                     {% if not is_view %}
-                    <button type="submit" name="accion" value="guardar" class="btn btn-primary mr-2">
-                        Guardar
+                    <button type="submit" name="accion" value="guardar" class="btn btn-success mr-2">
+                        Grabar
                     </button>
                     {% endif %}
+
+                    {% if is_view %}
+                        <a href="/module/{{module.id}}/edit/{{id}}" class="btn btn-warning mr-2">
+                        Editar 
+                    </a>
+                    {% endif %}
+
 
                     {% if id and not is_view %}
                     <button type="submit" name="accion" value="eliminar" class="btn btn-danger"
@@ -45,7 +52,7 @@
                     </button>
                     {% endif %}
                 </div>
-                <div class="row" id="cabecera">
+                <div class="row" id="cabeceraNorte">
                     <!-- ===================== -->
                     <!-- COLUMNA PRINCIPAL 70% -->
                     <!-- ===================== -->
@@ -54,11 +61,12 @@
 
                             {% for field in form %}
                             {% with a=field.field.widget.attrs %}
-                            {% if a.data_area != "side" %}
+                            {% if a.data_area == "Main-Arriba" %}
 
                             {% if a.data_break == "1" %}
                             <div class="w-100"></div>
                             {% endif %}
+
 
                             <div class="col-md-{{ a.data_col|default:12 }}" style="
                                                 margin-top: {{ a.data_gap_top|default:0 }}px;
@@ -66,7 +74,7 @@
                                                 {% if a.visible == False %}display: none;{% endif %}
                                               ">
                                 <label class="form-label small fw-semibold">
-                                    {{ field.label }}
+                                    {{ field.label }} 
                                 </label>
 
                                 {# 🔥 CASO ESPECIAL: ReferenciaBuscador #}
@@ -74,20 +82,39 @@
                                 <div class="input-group">
                                     {{ field }}
                                     {% if not is_view %}
-                                    <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
-                                        data-campo="{{ field.name }}" onclick="abrirReferenciaBuscador(this)">
-                                        🔍
-                                    </button>
+                                        <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
+                                            data-campo="{{ field.name }}" onclick="abrirReferenciaBuscador(this)">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        {% if a.data_ModuloIngresoRapido != "" %}
+                                            <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                class="btn btn-outline-secondary"
+                                                target="_blank">
+                                                <i class="bi bi-person-plus"></i>
+
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
+
                                 </div>
                                 {% else %}
                                 {% if a.data_tipo == "Archivo" %}
-                                <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
+                                    {% if id %}
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
 
-                                <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    class="form-control input-archivo"
-                                    data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
-                                    data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                        {% if not is_view %}
+                                             <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                        {% endif %}
+                                    {% else %}
+                                        <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
+                                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                    {% endif %}
 
 
                                 {% else %}
@@ -117,7 +144,7 @@
 
                             {% for field in form %}
                             {% with a=field.field.widget.attrs %}
-                            {% if a.data_area == "side" %}
+                            {% if a.data_area == "Side-Arriba" %}
 
                             {% if a.data_break == "1" %}
                             <div class="w-100"></div>
@@ -128,28 +155,53 @@
                                                 {% if a.visible == False %}display: none;{% endif %}
                                               ">
                                 <label class="form-label small fw-semibold">
-                                    {{ field.label }}
+                                    {{ field.label }} 
                                 </label>
 
                                 {# 🔥 CASO ESPECIAL: ReferenciaBuscador #}
                                 {% if a.data_tipo == "ReferenciaBuscador" %}
                                 <div class="input-group">
                                     {{ field }}
-                                    <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
-                                        data-campo="{{ field.name }}">
-                                        🔍
-                                    </button>
+                                    {% if not is_view %}
+                                        <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
+                                            data-campo="{{ field.name }}" onclick="abrirReferenciaBuscador(this)">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        {% if a.data_ModuloIngresoRapido != "" %}
+                                            <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                class="btn btn-outline-secondary"
+                                                target="_blank">
+                                            
+                                                <i class="bi bi-person-plus"></i>
+
+                                        
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                                 {% else %}
+                                
                                 {% if a.data_tipo == "Archivo" %}
-                                <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
-                                <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
-                                    class="form-control input-archivo"
-                                    data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
-                                    data-acepta="{{ field.field.widget.attrs.data_acepta }}">
 
+                                    {% if id %}
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+
+                                        {% if not is_view %}
+                                             <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                        {% endif %}
+                                    {% else %}
+                                        <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
+                                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                    {% endif %}
+                            
                                 {% else %}
-                                {{ field }}
+                                    {{ field }}
                                 {% endif %}
                                 {% endif %}
 
@@ -217,8 +269,16 @@
                                                         <button type="button" class="btn btn-outline-secondary"
                                                             data-action="abrir-buscador" data-campo="{{ field.name }}"
                                                             onclick="abrirReferenciaBuscadorDetalle(this)">
-                                                            🔍
+                                                            <i class="bi bi-search"></i>
                                                         </button>
+                                                           {% if a.data_ModuloIngresoRapido != "" %}
+                                                                <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                                    class="btn btn-outline-secondary"
+                                                                    target="_blank">
+                                                                    <i class="bi bi-person-plus"></i>
+
+                                                                </a>
+                                                            {% endif %}
                                                         {% endif %}
                                                     </div>
                                                     {% else %}
@@ -247,7 +307,175 @@
                         </div>
                     </div>
                 </div>
+
                 {% endif %}
+
+
+                  <div class="row" id="cabeceraSur">
+                    <!-- ===================== -->
+                    <!-- COLUMNA PRINCIPAL 70% -->
+                    <!-- ===================== -->
+                    <div class="col-md-8">
+                        <div class="row">
+
+                            {% for field in form %}
+                            {% with a=field.field.widget.attrs %}
+                            {% if a.data_area == "Main-Abajo" %}
+
+                            {% if a.data_break == "1" %}
+                            <div class="w-100"></div>
+                            {% endif %}
+
+
+                            <div class="col-md-{{ a.data_col|default:12 }}" style="
+                                                margin-top: {{ a.data_gap_top|default:0 }}px;
+                                                padding-right: {{ a.data_gap|default:0 }}px;
+                                                {% if a.visible == False %}display: none;{% endif %}
+                                              ">
+                                <label class="form-label small fw-semibold">
+                                    {{ field.label }} 
+                                </label>
+
+                                {# 🔥 CASO ESPECIAL: ReferenciaBuscador #}
+                                {% if a.data_tipo == "ReferenciaBuscador" %}
+                                <div class="input-group">
+                                    {{ field }}
+                                    {% if not is_view %}
+                                        <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
+                                            data-campo="{{ field.name }}" onclick="abrirReferenciaBuscador(this)">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        {% if a.data_ModuloIngresoRapido != "" %}
+                                            <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                class="btn btn-outline-secondary"
+                                                target="_blank">
+                                                <i class="bi bi-person-plus"></i>
+
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                {% if a.data_tipo == "Archivo" %}
+                                    {% if id %}
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+
+                                        {% if not is_view %}
+                                             <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                        {% endif %}
+                                    {% else %}
+                                        <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
+                                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                    {% endif %}
+
+
+                                {% else %}
+                                {{ field }}
+                                {% endif %}
+                                {% endif %}
+
+                                {% if field.errors %}
+                                <div class="text-danger small">
+                                    {{ field.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {% endif %}
+                            {% endwith %}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- COLUMNA LATERAL 30%   -->
+                    <!-- ===================== -->
+                    <div class="col-md-4">
+                        <div class="row">
+
+                            {% for field in form %}
+                            {% with a=field.field.widget.attrs %}
+                            {% if a.data_area == "Side-Abajo" %}
+
+                            {% if a.data_break == "1" %}
+                            <div class="w-100"></div>
+                            {% endif %}
+
+                            <div class="col-md-{{ a.data_col|default:12 }}" style="
+                                                margin-top: {{ a.data_gap_top|default:0 }}px;
+                                                {% if a.visible == False %}display: none;{% endif %}
+                                              ">
+                                <label class="form-label small fw-semibold">
+                                    {{ field.label }} 
+                                </label>
+
+                                {# 🔥 CASO ESPECIAL: ReferenciaBuscador #}
+                                {% if a.data_tipo == "ReferenciaBuscador" %}
+                                <div class="input-group">
+                                    {{ field }}
+                                    {% if not is_view %}
+                                        <button type="button" class="btn btn-outline-secondary" data-action="abrir-buscador"
+                                            data-campo="{{ field.name }}">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        {% if a.data_ModuloIngresoRapido != "" %}
+                                            <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                class="btn btn-outline-secondary"
+                                                target="_blank">
+                                                <i class="bi bi-person-plus"></i>
+
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                
+                                {% if a.data_tipo == "Archivo" %}
+
+                                    {% if id %}
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+
+                                        {% if not is_view %}
+                                             <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                        {% endif %}
+                                    {% else %}
+                                        <img id="preview_{{ field.name }}" style="max-width:200px; margin-top:10px;">
+                                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                            class="form-control input-archivo"
+                                            data-max-size="{{ field.field.widget.attrs.data_maxsize }}"
+                                            data-acepta="{{ field.field.widget.attrs.data_acepta }}">
+                                    {% endif %}
+                            
+                                {% else %}
+                                    {{ field }}
+                                {% endif %}
+                                {% endif %}
+
+                                {% if field.errors %}
+                                <div class="text-danger small">
+                                    {{ field.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {% endif %}
+                            {% endwith %}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
+                </div>
             </form>
         </div>
     </div>

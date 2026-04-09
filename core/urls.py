@@ -11,6 +11,7 @@ from core.views.modules.module_main_view import (module_main_view)
 from core.views.modules.module_view_reg_view import (module_view_reg_view, module_delete_reg_view)
 
 from core.views.modules.module_new_reg_view import (module_new_reg_view, calculosReferenciaBuscador, calculosNumeroSecuencial, calculosQueryBaseDatos)
+from core.views.modules.archivos_view import (subir_archivo)
 
 from core.views.modules.sync_module_schema_view import (sync_module_schema_view,)
 from core.views.modules.validate_model_view import validate_model_view
@@ -44,7 +45,8 @@ urlpatterns = [
     path("module/<slug:module_id>/view/<int:id>/", module_view_reg_view, name="module_view_reg_view"),
     path("module/<slug:module_id>/edit/<int:id>/", module_view_reg_view, name="module_edit_reg_view"),
     path("module/<slug:module_id>/delete/<int:id>/", module_delete_reg_view, name="module_delete_reg_view"),
-
+    path("module/subir_archivo/", subir_archivo, name="subir_archivo"),
+    
     
     # Endpoint de desarrollo para sincronizar esquema MySQL
     path("module/<slug:module_id>/sync-schema/",sync_module_schema_view,name="sync_module_schema"),

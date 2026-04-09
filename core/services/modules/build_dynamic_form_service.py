@@ -53,7 +53,6 @@ def build_dynamic_form(campos, company, modelo):
         tipo_funcional = campo.get("tipo_funcional")
         requerido = campo.get("requerido", False)
         configuracion = campo.get("configuracion", {})
-        validacion = campo.get("validacion", {})
 
         # layout metadata
         visible = campo.get("visible", True)
@@ -67,14 +66,15 @@ def build_dynamic_form(campos, company, modelo):
         widget_attrs = {
             "id": f"id_{nombre}",
             "class": "form-control",
-            "data-col": col,
-            "data-gap": gap,
-            "data-gap-top": gap_top,
-            "data-break": "1" if break_line else "0",
-            "data-area": area,
+            "data_col": col,
+            "data_gap": gap,
+            "data_gap_top": gap_top,
+            "data_break": "1" if break_line else "0",
+            "data_area": area,
             "visible": visible,
             "data_tipo": tipo_funcional,
             "data-modelo": modelo,
+            
         }
 
         # 🔒 regla global
@@ -88,23 +88,21 @@ def build_dynamic_form(campos, company, modelo):
             opciones = configuracion.get("opciones", [])
             labels = configuracion.get("labels", {})
             choices = [(op, labels.get(op, op)) for op in opciones]
+            
+            widget_attrs.update({
+                "class": "form-select form-control-erp",
+                "style": "width: 100%",
+            })
+
 
             form_fields[nombre] = forms.ChoiceField(
                 label=etiqueta,
                 choices=choices,
                 required=requerido,
                 initial=configuracion.get("valor_predeterminado"),
-                widget=forms.Select(attrs={
-                    "class": "form-select form-control-erp",
-                    "data-col": col,
-                    "data-gap": gap,
-                    "data-gap-top": gap_top,
-                    "data-break": "1" if break_line else "0",
-                    "data-area": area,
-                    "style": "width: 100%",
-                    "data_tipo": tipo_funcional,
-                })
+                widget=forms.Select(attrs=widget_attrs)  # ✅ FIX
             )
+
             continue
 
         # ====================================================
@@ -125,6 +123,8 @@ def build_dynamic_form(campos, company, modelo):
                 widget_attrs["data-variables"] = ""
 
             widget_attrs["data-valorinicial"] = configuracion.get("valor_inicial", "")
+            widget_attrs["data_ModuloIngresoRapido"] = configuracion.get("ModuloIngresoRapido", "")
+            
 
         # ====================================================
         # 🔽 REFERENCIA
@@ -171,12 +171,17 @@ def build_dynamic_form(campos, company, modelo):
             }
 
             if tipo_base == "decimal":
-                kwargs["decimal_places"] = validacion.get("decimales", 2)
+                kwargs["decimal_places"] = 2
                 kwargs["max_digits"] = 18
 
-            if tipo_base == "int":
-                kwargs["min_value"] = validacion.get("min")
-                kwargs["max_value"] = validacion.get("max")
+            if tipo_base == "decimal4":
+                kwargs["decimal_places"] = 4
+                kwargs["max_digits"] = 18
+                
+            if tipo_base == "decimal6":
+                kwargs["decimal_places"] = 6
+                kwargs["max_digits"] = 18
+
 
             if tipo_base == "string":
                 kwargs["max_length"] = 255
@@ -188,14 +193,19 @@ def build_dynamic_form(campos, company, modelo):
         # 🔽 CONFIGURACIONES ESPECIALES
         # ====================================================
         if tipo_funcional == "NumeroSimple":
-            widget_attrs["data-min"] = validacion.get("min")
-            widget_attrs["data-decimales"] = validacion.get("decimales", 2)
+            widget_attrs["data-min"] = configuracion.get("min")
 
         if tipo_funcional == "TextoSimple":
             if configuracion.get("editable") == "No":
                 widget_attrs["readonly"] = "readonly"
 
             widget_attrs["data-unico"] = configuracion.get("unico")
+            widget_attrs["data-valor_predeterminado"] = configuracion.get("valor_predeterminado")
+            
+
+        if tipo_funcional == "FechaRegistro":
+            if configuracion.get("editable") == "No":
+                widget_attrs["readonly"] = "readonly"
 
         if tipo_funcional == "Archivo":
             widget_attrs.update({
@@ -205,12 +215,12 @@ def build_dynamic_form(campos, company, modelo):
                 "data_tipo": tipo_funcional,
             })
 
-            form_fields[nombre] = forms.FileField(
-                label=etiqueta,
-                required=requerido,
-                widget=forms.ClearableFileInput(attrs=widget_attrs)
-            )
-            continue
+            # form_fields[nombre] = forms.FileField(
+            #     label=etiqueta,
+            #     required=requerido,
+            #     widget=forms.ClearableFileInput(attrs=widget_attrs)
+            # )
+            # continue
 
         if tipo_funcional == "Operacion":
             widget_attrs["data-formula"] = configuracion.get("formula")
@@ -246,14 +256,21 @@ def build_dynamic_form(campos, company, modelo):
         }
 
         if tipo_base == "decimal":
-            kwargs["decimal_places"] = validacion.get("decimales", 2)
+            kwargs["decimal_places"] = 2
             kwargs["max_digits"] = 18
-            kwargs["min_value"] = validacion.get("min")
-            kwargs["max_value"] = validacion.get("max")
 
-        if tipo_base == "int":
-            kwargs["min_value"] = validacion.get("min")
-            kwargs["max_value"] = validacion.get("max")
+        if tipo_base == "decimal2":
+            kwargs["decimal_places"] = 2
+            kwargs["max_digits"] = 18
+
+        if tipo_base == "decimal4":
+            kwargs["decimal_places"] = 4
+            kwargs["max_digits"] = 18
+
+        if tipo_base == "decimal6":
+            kwargs["decimal_places"] = 6
+            kwargs["max_digits"] = 18
+
 
         if tipo_base == "date":
             kwargs["widget"] = widgets.DateInput(
