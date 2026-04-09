@@ -167,11 +167,9 @@ class ModelValidatorService:
 
     @classmethod
     def _validate_fields_structure(cls, campos, errors):
-<<<<<<< mejoraValidadorJsonModelos
         """
         Valida estructura exacta de cada campo.
         """
-=======
 
         required = {
             "visible",
@@ -191,7 +189,7 @@ class ModelValidatorService:
             "gap_top",
             "break",
         }
->>>>>>> main
+
 
 
         for i, campo in enumerate(campos):
@@ -287,7 +285,6 @@ class ModelValidatorService:
                 })
             orden_area.add(key)
 
-<<<<<<< mejoraValidadorJsonModelos
             # validación especial para modelos tipo detalle
             if data.get("rol") == "detalle":
                 if campo.get("area") != "main":
@@ -297,17 +294,7 @@ class ModelValidatorService:
                         "elemento": campo.get("area"),
                         "sugerenciaCorreccion": "Solo 'main' permitido"
                     })
-=======
-            # regla especial detalle: solo main.. es indiferente el area en detalle
-            # if data.get("rol") == "detalle":
-            #     if campo.get("area") != "main":
-            #         errors.append({
-            #             "tipoError": "Área inválida",
-            #             "ubicacion": f"{path}.area",
-            #             "elemento": campo.get("area"),
-            #             "sugerenciaCorreccion": "En modelos detalle solo se permite area 'main'"
-            #         })
->>>>>>> main
+         
 
     # =========================
     # CONFIG
