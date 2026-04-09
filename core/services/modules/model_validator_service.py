@@ -4,13 +4,32 @@ import json
 import re
 
 from core.services.modules.constants import (
+    MODEL_REQUIRED_FIELDS,
+    FIELD_REQUIRED_FIELDS,
     SQL_TYPES_KEYS,
     CECOD_TYPES,
-    CECOD_CONFIG_STRUCTURE,
+    CECOD_CONFIG_META,
+    SQL_TYPE_META,
+    TIPO_FUNCIONAL_META
 )
 
 
 class ModelValidatorService:
+    """
+    Servicio encargado de VALIDAR un modelo dinámico.
+
+    IMPORTANTE:
+    - Este servicio NO corrige, solo valida.
+    - Se usa antes y después del proceso de corrección.
+    - Detecta inconsistencias estructurales, semánticas y de configuración.
+
+    Flujo:
+        validate()
+            ├── JSON válido
+            ├── metadata (estructura + semántica)
+            ├── campos (estructura + semántica)
+            └── configuración por tipo funcional
+    """
 
     # =========================
     # ENTRYPOINT
@@ -18,6 +37,7 @@ class ModelValidatorService:
 
     @classmethod
     def validate(cls, model_json):
+        """Valida un modelo dinámico a partir de su JSON o dict."""
         errors = []
 
         data = cls._validate_json(model_json, errors)
@@ -40,6 +60,7 @@ class ModelValidatorService:
 
     @staticmethod
     def _build_response(errors):
+        """Construye la respuesta estándar del validador."""
         return {
             "is_valid": len(errors) == 0,
             "errors": errors
@@ -51,6 +72,13 @@ class ModelValidatorService:
 
     @staticmethod
     def _validate_json(model_json, errors):
+        """
+        Valida que el input sea JSON válido o dict.
+
+        Si es string → intenta parsear.
+        Si falla → error crítico.
+        """
+
         if isinstance(model_json, dict):
             return model_json
 
@@ -61,7 +89,7 @@ class ModelValidatorService:
                 "tipoError": "JSON inválido",
                 "ubicacion": "modelo completo",
                 "elemento": "JSON inválido",
-                "sugerenciaCorreccion": "Asegúrate de que el modelo sea un JSON válido"
+                "sugerenciaCorreccion": "El JSON no es parseable"
             })
             return None
 
@@ -71,20 +99,18 @@ class ModelValidatorService:
 
     @classmethod
     def _validate_metadata_structure(cls, data, errors):
+        """
+        Valida que la metadata tenga EXACTAMENTE los campos requeridos.
 
-        required = {
-            "_id",
-            "activo",
-            "tabla",
-            "display",
-            "rol",
-            "pk",
-            "campos",
-            "modulo",
-        }
+        ✔ Detecta:
+            - faltantes
+            - sobrantes
+        """
+
+        required = set(MODEL_REQUIRED_FIELDS["base"])
 
         if data.get("rol") == "detalle":
-            required.add("fk")
+            required |= MODEL_REQUIRED_FIELDS["detalle_extra"]
 
         cls._validate_exact_keys(data, required, "", errors)
 
@@ -94,8 +120,15 @@ class ModelValidatorService:
 
     @classmethod
     def _validate_metadata_semantics(cls, data, errors):
+        """
+        Valida coherencia lógica de metadata.
 
-        # slug validation
+        ✔ Slugs válidos
+        ✔ PK existente
+        ✔ FK (si aplica)
+        """
+
+        # Validación de slug (_id y tabla)
         for key in ["_id", "tabla"]:
             val = data.get(key)
             if val and not re.match(r"^[a-z0-9_]+$", val):
@@ -103,29 +136,29 @@ class ModelValidatorService:
                     "tipoError": "Slug inválido",
                     "ubicacion": key,
                     "elemento": val,
-                    "sugerenciaCorreccion": "Debe ser slug válido (minúsculas, números y _)"
+                    "sugerenciaCorreccion": "Debe ser minúsculas, sin espacios"
                 })
 
         campos = data.get("campos", [])
         nombres = [c.get("nombre") for c in campos]
 
-        # PK obligatorio
+        # PK debe existir como campo
         if data.get("pk") not in nombres:
             errors.append({
                 "tipoError": "PK inválido",
                 "ubicacion": "pk",
                 "elemento": data.get("pk"),
-                "sugerenciaCorreccion": "El pk definido en el modelo debe existir en los campos"
+                "sugerenciaCorreccion": "Debe existir en campos"
             })
 
-        # FK obligatorio en detalle
+        # FK solo en detalle
         if data.get("rol") == "detalle":
             if data.get("fk") not in nombres:
                 errors.append({
                     "tipoError": "FK inválido",
                     "ubicacion": "fk",
                     "elemento": data.get("fk"),
-                    "sugerenciaCorreccion": "El fk definido en el modelo detalle debe existir en los campos"
+                    "sugerenciaCorreccion": "Debe existir en campos"
                 })
 
     # =========================
@@ -134,6 +167,11 @@ class ModelValidatorService:
 
     @classmethod
     def _validate_fields_structure(cls, campos, errors):
+<<<<<<< mejoraValidadorJsonModelos
+        """
+        Valida estructura exacta de cada campo.
+        """
+=======
 
         required = {
             "visible",
@@ -153,10 +191,11 @@ class ModelValidatorService:
             "gap_top",
             "break",
         }
+>>>>>>> main
 
 
         for i, campo in enumerate(campos):
-            cls._validate_exact_keys(campo, required, f"campos[{i}]", errors)
+            cls._validate_exact_keys(campo, FIELD_REQUIRED_FIELDS, f"campos[{i}]", errors)
 
     # =========================
     # FIELDS SEMANTICS
@@ -164,6 +203,16 @@ class ModelValidatorService:
 
     @classmethod
     def _validate_fields_semantics(cls, data, campos, errors):
+        """
+        Valida coherencia interna de campos.
+
+        ✔ nombre único
+        ✔ tipo_base válido
+        ✔ tipo_funcional válido
+        ✔ consistencia entre ambos
+        ✔ valor_default compatible
+        ✔ orden por área sin duplicados
+        """
 
         nombres = set()
         orden_area = set()
@@ -178,26 +227,53 @@ class ModelValidatorService:
                     "tipoError": "Nombre duplicado",
                     "ubicacion": f"{path}.nombre",
                     "elemento": nombre,
-                    "sugerenciaCorreccion": "Cada campo debe tener un nombre único"
+                    "sugerenciaCorreccion": "Debe ser único"
                 })
             nombres.add(nombre)
 
+            tipo_base = campo.get("tipo_base")
+            tipo_funcional = campo.get("tipo_funcional")
+
             # tipo_base válido
-            if campo.get("tipo_base") not in SQL_TYPES_KEYS:
+            if tipo_base not in SQL_TYPES_KEYS:
                 errors.append({
                     "tipoError": "tipo_base inválido",
                     "ubicacion": f"{path}.tipo_base",
-                    "elemento": campo.get("tipo_base"),
-                    "sugerenciaCorreccion": "Utiliza uno de los tipo_base permitidos"
+                    "elemento": tipo_base,
+                    "sugerenciaCorreccion": "No permitido"
                 })
 
             # tipo_funcional válido
-            if campo.get("tipo_funcional") not in CECOD_TYPES:
+            if tipo_funcional not in CECOD_TYPES:
                 errors.append({
                     "tipoError": "tipo_funcional inválido",
                     "ubicacion": f"{path}.tipo_funcional",
-                    "elemento": campo.get("tipo_funcional"),
-                    "sugerenciaCorreccion": "Utiliza uno de los tipo_funcional permitidos"
+                    "elemento": tipo_funcional,
+                    "sugerenciaCorreccion": "No permitido"
+                })
+
+            # consistencia base vs funcional
+            meta = TIPO_FUNCIONAL_META.get(tipo_funcional)
+            if meta and tipo_base not in meta["bases_validas"]:
+                errors.append({
+                    "tipoError": "tipo_base inconsistente",
+                    "ubicacion": f"{path}.tipo_base",
+                    "elemento": tipo_base,
+                    "sugerenciaCorreccion": f"Debe ser {meta['bases_validas']}"
+                })
+
+            # validación de valor_default
+            result = cls.normalize_and_validate(
+                campo.get("valor_default"),
+                tipo_base
+            )
+
+            if not result["is_valid"]:
+                errors.append({
+                    "tipoError": "valor_default inválido",
+                    "ubicacion": f"{path}.valor_default",
+                    "elemento": campo.get("valor_default"),
+                    "sugerenciaCorreccion": result["error"]
                 })
 
             # orden único por área
@@ -207,10 +283,21 @@ class ModelValidatorService:
                     "tipoError": "Orden duplicado",
                     "ubicacion": f"{path}.orden",
                     "elemento": campo.get("orden"),
-                    "sugerenciaCorreccion": "Cambia el orden en los campos que tienen valores duplicados perteneciendo a la misma área"
+                    "sugerenciaCorreccion": "Duplicado en área"
                 })
             orden_area.add(key)
 
+<<<<<<< mejoraValidadorJsonModelos
+            # validación especial para modelos tipo detalle
+            if data.get("rol") == "detalle":
+                if campo.get("area") != "main":
+                    errors.append({
+                        "tipoError": "Área inválida",
+                        "ubicacion": f"{path}.area",
+                        "elemento": campo.get("area"),
+                        "sugerenciaCorreccion": "Solo 'main' permitido"
+                    })
+=======
             # regla especial detalle: solo main.. es indiferente el area en detalle
             # if data.get("rol") == "detalle":
             #     if campo.get("area") != "main":
@@ -220,23 +307,63 @@ class ModelValidatorService:
             #             "elemento": campo.get("area"),
             #             "sugerenciaCorreccion": "En modelos detalle solo se permite area 'main'"
             #         })
+>>>>>>> main
 
     # =========================
-    # CONFIG VALIDATION
+    # CONFIG
     # =========================
 
     @classmethod
     def _validate_field_configurations(cls, campos, errors):
+        """
+        Valida estructura de configuraciones usando CECOD_CONFIG_META.
+        """
 
         for i, campo in enumerate(campos):
             tipo = campo.get("tipo_funcional")
-            config = campo.get("configuracion", {})
-            path = f"campos[{i}].configuracion"
 
-            expected_keys = CECOD_CONFIG_STRUCTURE.get(tipo)
+            meta = CECOD_CONFIG_META.get(tipo)
+            if not meta:
+                continue
 
-            if expected_keys is not None:
-                cls._validate_exact_keys(config, expected_keys, path, errors)
+            expected = meta["structure"]
+
+            cls._validate_exact_keys(
+                campo.get("configuracion", {}),
+                expected,
+                f"campos[{i}].configuracion",
+                errors
+            )
+
+    # =========================
+    # CORE SHARED LOGIC
+    # =========================
+
+    @staticmethod
+    def normalize_and_validate(valor, tipo_base):
+        """
+        Intenta castear valor_default al tipo_base esperado.
+
+        ✔ Corrige implícitamente
+        ✔ Retorna si es válido o no
+        """
+
+        meta = SQL_TYPE_META.get(tipo_base)
+
+        if not meta:
+            return {"value": valor, "is_valid": False, "was_changed": False, "error": "tipo_base sin metadata"}
+
+        default = meta["default"]
+        caster = meta["cast"]
+
+        if valor is None:
+            return {"value": default, "is_valid": False, "was_changed": True, "error": "No puede ser null"}
+
+        try:
+            nuevo = caster(valor)
+            return {"value": nuevo, "is_valid": True, "was_changed": nuevo != valor, "error": None}
+        except Exception:
+            return {"value": default, "is_valid": False, "was_changed": True, "error": "Tipo inválido"}
 
     # =========================
     # UTIL
@@ -244,33 +371,36 @@ class ModelValidatorService:
 
     @staticmethod
     def _validate_exact_keys(data, required_keys, path, errors):
+        """
+        Valida que un dict tenga EXACTAMENTE las keys esperadas.
+
+        ✔ Detecta faltantes
+        ✔ Detecta extras
+        """
 
         if not isinstance(data, dict):
             errors.append({
                 "tipoError": "Tipo inválido",
                 "ubicacion": path,
                 "elemento": data,
-                "sugerenciaCorreccion": "Debe ser un objeto"
+                "sugerenciaCorreccion": "Debe ser objeto"
             })
             return
 
         keys = set(data.keys())
 
-        missing = required_keys - keys
-        extra = keys - required_keys
-
-        for m in missing:
+        for m in required_keys - keys:
             errors.append({
                 "tipoError": "Campo requerido faltante",
                 "ubicacion": f"{path}.{m}" if path else m,
                 "elemento": None,
-                "sugerenciaCorreccion": f"Agrega el campo requerido: {m}"
+                "sugerenciaCorreccion": f"Agregar {m}"
             })
 
-        for e in extra:
+        for e in keys - required_keys:
             errors.append({
                 "tipoError": "Campo no permitido",
                 "ubicacion": f"{path}.{e}" if path else e,
                 "elemento": data.get(e),
-                "sugerenciaCorreccion": f"Elimina el campo no permitido: {e}"
+                "sugerenciaCorreccion": f"Eliminar {e}"
             })

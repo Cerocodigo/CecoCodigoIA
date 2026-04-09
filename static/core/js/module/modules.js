@@ -44,65 +44,159 @@ function createModule() {
         });
 }
 
-function syncModuleSchema(moduleId) {
+// function syncModuleSchema(moduleId) {
+
+//     if (!moduleId) {
+//         alert("ID del módulo no válido");
+//         return;
+//     }
+
+//     if (!confirm("¿Deseas sincronizar la estructura MySQL con MongoDB?")) {
+//         return;
+//     }
+
+//     fetch(`/module/${moduleId}/sync-schema/`, {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-CSRFToken": getCSRFToken(),
+//         },
+//     })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 alert("Esquema sincronizado correctamente");
+//             } else {
+//                 alert(data.error || "Error al sincronizar");
+//             }
+//         })
+//         .catch(error => {
+//             console.error("Error sincronizando esquema:", error);
+//             alert("Error de comunicación con el servidor");
+//         });
+// }
+
+// function validateModule(moduleId) {
+//     // if (!confirm("¿Validar estructura del módulo?")) return;
+
+//     fetch(`/module/${moduleId}/validate-module/`, {
+//         method: "POST",
+//         headers: {
+//             "X-CSRFToken": getCSRFToken(),
+//             "Content-Type": "application/json",
+//         },
+//     })
+//     .then(res => res.json())
+//     .then(data => {
+//         console.log("--------------------------------");
+//         console.log("🔍 Resultado validación módulo:");
+//         console.log(data["result"]);
+//         console.log("--------------------------------");
+
+//         for (const [modelId, validation] of Object.entries(data["result"])) {
+//             console.log(`Modelo ID: ${modelId}`);
+//             console.log("Validación:", validation);
+//             console.log("--------------------------------");
+//         }
+
+//     })
+//     .catch(err => {
+//         console.error("Error en validación:", err);
+//         alert("Error en la validación");
+//     });
+// }
+
+
+function validateModule(moduleId) {
 
     if (!moduleId) {
         alert("ID del módulo no válido");
         return;
     }
 
-    if (!confirm("¿Deseas sincronizar la estructura MySQL con MongoDB?")) {
+    if (!confirm("¿Validar y sincronizar estructura del módulo?")) {
         return;
     }
 
-    fetch(`/module/${moduleId}/sync-schema/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),
-        },
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Esquema sincronizado correctamente");
-            } else {
-                alert(data.error || "Error al sincronizar");
-            }
-        })
-        .catch(error => {
-            console.error("Error sincronizando esquema:", error);
-            alert("Error de comunicación con el servidor");
-        });
-}
-
-function validateModel(moduleId) {
-    // if (!confirm("¿Validar estructura del modelo?")) return;
-
-    fetch(`/module/${moduleId}/validate-model/`, {
+    fetch(`/module/${moduleId}/validate-module/`, {
         method: "POST",
         headers: {
             "X-CSRFToken": getCSRFToken(),
             "Content-Type": "application/json",
         },
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log("--------------------------------");
-        console.log("🔍 Resultado validación modelo:");
-        console.log(data["result"]);
-        console.log("--------------------------------");
+    .then(async (res) => {
+        const data = await res.json();
 
-        for (const [modelId, validation] of Object.entries(data["result"])) {
-            console.log(`Modelo ID: ${modelId}`);
-            console.log("Validación:", validation);
-            console.log("--------------------------------");
+        return {
+            status: res.status,
+            ok: res.ok,
+            data: data
+        };
+    })
+    .then(({ status, data }) => {
+
+        console.log("====================================");
+        console.log("🔍 Resultado VALIDATE MODULE");
+        console.log("Status HTTP:", status);
+        console.log("Respuesta:", data);
+        console.log("====================================");
+
+        if (!data.results) {
+            alert(data.error || "Respuesta inválida del servidor");
+            return;
         }
 
+        let resumen = [];
+        let errores = [];
+
+        data.results.forEach(item => {
+
+            const model = item.model;
+            const rol = item.rol;
+            const success = item.success;
+
+            console.log("--------------------------------");
+            console.log(`Modelo: ${model} (${rol})`);
+            console.log("Resultado:", item);
+            console.log("--------------------------------");
+
+            if (success) {
+                resumen.push(`✅ ${model} (${rol})`);
+            } else {
+                resumen.push(`❌ ${model} (${rol})`);
+
+                if (item.errors && item.errors.length) {
+                    item.errors.forEach(err => {
+                        errores.push(
+                            `[${model}] ${err.tipoError} - ${err.elemento}`
+                        );
+                    });
+                }
+            }
+        });
+
+        // =========================
+        // MENSAJE FINAL
+        // =========================
+        if (data.success) {
+            alert(
+                "✅ Módulo validado y sincronizado correctamente\n\n" +
+                resumen.join("\n")
+            );
+        } else {
+            alert(
+                "⚠️ Validación parcial o con errores\n\n" +
+                resumen.join("\n") +
+                "\n\nErrores:\n" +
+                (errores.length ? errores.join("\n") : "Sin detalle")
+            );
+        }
     })
     .catch(err => {
-        console.error("Error en validación:", err);
-        alert("Error en la validación");
+        console.error("Error en validate-module:", err);
+
+        alert("❌ Error de comunicación con el servidor");
     });
 }
 
