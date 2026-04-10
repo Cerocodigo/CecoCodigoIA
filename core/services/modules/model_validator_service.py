@@ -171,27 +171,6 @@ class ModelValidatorService:
         Valida estructura exacta de cada campo.
         """
 
-        required = {
-            "visible",
-            "nombre",
-            "etiqueta",
-            "tipo_base",
-            "tipo_funcional",
-            "requerido",
-            "configuracion",
-            "orden",
-            "col",
-            "area",
-            "valor_default",
-            "placeholder",
-            "ayuda",
-            "gap",
-            "gap_top",
-            "break",
-        }
-
-
-
         for i, campo in enumerate(campos):
             cls._validate_exact_keys(campo, FIELD_REQUIRED_FIELDS, f"campos[{i}]", errors)
 
