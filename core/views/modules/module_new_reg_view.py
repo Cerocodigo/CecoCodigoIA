@@ -221,7 +221,7 @@ def module_new_reg_view(request, module_id: str):
     })
     
  
-def calculosReferenciaBuscador(request, modelo, campo):
+def calculosReferenciaBuscador(request, modelo, campo, fila=None):
 
     # =========================
     # Usuario autenticado
@@ -326,7 +326,12 @@ def calculosReferenciaBuscador(request, modelo, campo):
             filtros.append(f"{campo_filtro} LIKE %s")
             params.append(like_value)
 
-        sql += " AND (" + " OR ".join(filtros) + ")"
+        sql_lower = sql.lower()
+
+        if " where " in sql_lower:
+            sql += f" AND ({' OR '.join(filtros)})"
+        else:
+            sql += f" WHERE ({' OR '.join(filtros)})"
 
     # =========================
     # Ejecutar SQL
@@ -349,6 +354,7 @@ def calculosReferenciaBuscador(request, modelo, campo):
             "resultados": rows,
             "Campos_filtros": Campos_filtros,
             "Campo": campo_conf.get("nombre", ''),
+            "fila": fila,
         })
 
     except Exception as e:
@@ -360,7 +366,7 @@ def calculosReferenciaBuscador(request, modelo, campo):
             "params_debug": params
         })
 
-def calculosNumeroSecuencial(request, modelo, campo):
+def calculosNumeroSecuencial(request, modelo, campo, fila=None):
     # =========================
     # Usuario autenticado
     # =========================
@@ -431,7 +437,8 @@ def calculosNumeroSecuencial(request, modelo, campo):
                 "campo": campo,
                 "tabla": tabla,
                 "actual": actual,
-                "siguiente": siguiente
+                "siguiente": siguiente,
+                "fila":fila
             })
         finally:
             try:
@@ -450,7 +457,7 @@ import json
 from django.http import JsonResponse, Http404
 from django.shortcuts import redirect
 
-def calculosQueryBaseDatos(request, modelo, campo):
+def calculosQueryBaseDatos(request, modelo, campo, fila=None):
 
     # =========================
     # Usuario autenticado
@@ -571,7 +578,8 @@ def calculosQueryBaseDatos(request, modelo, campo):
             "estado": True,
             "tipo": "QueryBaseDatos",
             "campo": campo,
-            "valor": valor
+            "valor": valor,
+            "fila":fila
         })
 
     except Exception as e:

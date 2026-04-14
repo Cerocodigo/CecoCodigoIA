@@ -237,14 +237,29 @@
                         </ul>
                         <div class="tab-content mt-3">
                             {% for detalle in formularios_detalle %}
+
+
                             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}"
                                 id="tab_content{{detalle.modelo_id}}">
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-sm align-middle"
-                                        id="tabla-detalles-{{detalle.modelo_id}}">
+                                        id="tabla-detalles-{{detalle.modelo_id}}" style="width: max-content; min-width: 100%;">
+
+                                        <colgroup>
+                                            {% for field in detalle.forms.0 %}
+                                                
+                                                {% if field.field.widget.attrs.visible is not None and field.field.widget.attrs.visible %}
+                                                    <col style="width: {{field.field.widget.attrs.data_col}}00px;">  <!--{{ field.label }} {{field.field.widget.attrs.data_col}}-->
+                                                {% endif %}
+                                                
+
+                                            {% endfor %}
+                                            <col style="width: 100px;">  <!-- Acción -->
+                                        </colgroup>
                                         <thead class="table-light">
                                             <tr>
                                                  {% for field in detalle.forms.0 %}
+                                                 
                                                 <th
                                                     class="{% if field.field.widget.attrs.visible is not None and not field.field.widget.attrs.visible %}d-none{% endif %}">
                                                     {{ field.label }}
@@ -256,9 +271,9 @@
 
                                         <tbody id="detalles-container{{detalle.modelo_id}}" class="detalles-container">
                                             {% for form in detalle.forms %}
-                                            <tr class="detalle-fila">
+                                            <tr class="detalle-fila" data-row="{{ forloop.parentloop.counter0 }}" data-form="{{ forloop.counter0 }}">
                                                 {% for field in form %}
-                                                <td
+                                                <td  
                                                     class="{% if field.field.widget.attrs.visible is not None and not field.field.widget.attrs.visible %}d-none{% endif %}">
 
                                                     {# 🔥 CASO ESPECIAL: ReferenciaBuscador #}
@@ -271,8 +286,8 @@
                                                             onclick="abrirReferenciaBuscadorDetalle(this)">
                                                             <i class="bi bi-search"></i>
                                                         </button>
-                                                           {% if a.data_ModuloIngresoRapido != "" %}
-                                                                <a href="/module/{{a.data_ModuloIngresoRapido}}/new/" 
+                                                           {% if field.field.widget.attrs.data_ModuloIngresoRapido != "" %}
+                                                                <a href="/module/{{field.field.widget.attrs.data_ModuloIngresoRapido}}/new/" 
                                                                     class="btn btn-outline-secondary"
                                                                     target="_blank">
                                                                     <i class="bi bi-person-plus"></i>
@@ -521,6 +536,14 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+
+    
+
+
+
+</script>
 
 {% block extra_js %}
 <script src="{% static 'core/js/module/module_new_reg.js' %}"></script>

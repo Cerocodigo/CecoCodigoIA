@@ -39,9 +39,17 @@ urlpatterns = [
     path("module/create/",create_module_view,name="create_module"),
     path("module/<slug:module_id>/main/", module_main_view, name="module_main"),
     path("module/<slug:module_id>/new/", module_new_reg_view, name="module_new_reg"),
+
     path("calculosNumeroSecuencial/<str:modelo>/<str:campo>/",calculosNumeroSecuencial, name="calculosNumeroSecuencial"), ##calculosCampos 
+    path("calculosNumeroSecuencial/<str:modelo>/<str:campo>/<str:fila>/",calculosNumeroSecuencial, name="calculosNumeroSecuencial"), ##calculosCampos 
+    
     path("calculosQueryBaseDatos/<str:modelo>/<str:campo>/",calculosQueryBaseDatos, name="calculosQueryBaseDatos"),
+    path("calculosQueryBaseDatos/<str:modelo>/<str:campo>/<str:fila>/",calculosQueryBaseDatos, name="calculosQueryBaseDatos"),
+    
+
     path("calculosReferenciaBuscador/<str:modelo>/<str:campo>/",calculosReferenciaBuscador, name="calculosReferenciaBuscador"),
+    path("calculosReferenciaBuscador/<str:modelo>/<str:campo>/<str:fila>/",calculosReferenciaBuscador, name="calculosReferenciaBuscador"),
+    
     path("module/<slug:module_id>/view/<int:id>/", module_view_reg_view, name="module_view_reg_view"),
     path("module/<slug:module_id>/edit/<int:id>/", module_view_reg_view, name="module_edit_reg_view"),
     path("module/<slug:module_id>/delete/<int:id>/", module_delete_reg_view, name="module_delete_reg_view"),

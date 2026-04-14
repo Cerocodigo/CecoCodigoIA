@@ -8,6 +8,8 @@ let refPageSize = 10;
 let refCurrentPage = 1;
 let refRowsOriginal = [];
 
+
+
 const modalReferencia = new bootstrap.Modal(document.getElementById("modalReferencia"));
 
 function abrirReferenciaBuscadorDetalle(btn) {
@@ -46,54 +48,100 @@ function abrirReferenciaBuscador(btn) {
 
 function buscarReferenciaDirecto(q, refConfigActual, input) {
     const { modelo, campo } = refConfigActual;
-    refInputActivo = input
-    fetch(`/calculosReferenciaBuscador/${modelo}/${campo}/?q=${encodeURIComponent(q)}`, {
+    
+    const tr = input.closest("tr");
+    let filaEnvio = 0
+    if(tr == null){
+        filaEnvio = null
+    }else{
+        filaEnvio = tr.dataset['row']
+    }
+
+    fetch(`/calculosReferenciaBuscador/${modelo}/${campo}/${filaEnvio}/?q=${encodeURIComponent(q)}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" }
     })
         .then(r => r.json())
         .then(data => {
-            if (!data.estado || !data.resultados) return;
 
-            
-            refInputActivo = document.getElementById("id_" + data.Campo)
 
-            refInputActivo.value = data.resultados[0][refInputActivo.dataset['label_field']]
-            refInputActivo.dataset['valor'] = data.resultados[0][refInputActivo.dataset['value_field']]
+            if(data.fila == null || data.fila == 'null'){
+                //Cabecera
+                refInputActivo = document.getElementById("id_" + data.Campo)
+            }else{
+                //Detalle
+                const filas = document.querySelectorAll('tr[data-row="'+data.fila+'"]');
 
-            //asume detalle
-            if (refInputActivo.parentElement.parentElement.tagName == 'TD') {
-
-                const tr = refInputActivo.closest("tr");
-
-                tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
-                    if (campo.dataset.refFrom === refInputActivo.id) {
-                        if(campo.dataset.refKey in data.resultados[0]){
-                            campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
-                        }else{
-                            campo.value = data.resultados[0][campo.dataset.refKey.toLowerCase()] ?? "0";
-                        }
-                        // campo.dispatchEvent(new Event("change")); // opcional
+                filas.forEach(tr => {
+                    const inputbuscador = tr.querySelector('#id_' + data.Campo);
+                    if (inputbuscador) {
+                        refInputActivo = inputbuscador
                     }
                 });
-                calcular_Fila(tr)
             }
-            //asume formulario
-            if (refInputActivo.parentElement.parentElement.tagName == 'DIV') {
-                document
-                    .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
-                    .forEach(campo => {
 
+
+            if (!data.estado || !data.resultados){
+                                //asume detalle
+                if (refInputActivo.parentElement.parentElement.tagName == 'TD') {
+
+                    const tr = refInputActivo.closest("tr");
+
+                    tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
+                        if (campo.dataset.refFrom === refInputActivo.id) {
+                                campo.value = '0'
+                        }
+                    });
+                    calcular_Fila(tr)
+                }
+                //asume formulario
+                if (refInputActivo.parentElement.parentElement.tagName == 'DIV') {
+                    document
+                        .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
+                        .forEach(campo => {
+                            if (campo.dataset.refFrom === refInputActivo.id) {
+                                campo.value = '0'
+                            }
+                        });
+                }
+
+            }else{
+                refInputActivo.value = data.resultados[0][refInputActivo.dataset['label_field']]
+                refInputActivo.dataset['valor'] = data.resultados[0][refInputActivo.dataset['value_field']]
+
+            
+
+                //asume detalle
+                if (refInputActivo.parentElement.parentElement.tagName == 'TD') {
+
+                    const tr = refInputActivo.closest("tr");
+
+                    tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
                         if (campo.dataset.refFrom === refInputActivo.id) {
                             if(campo.dataset.refKey in data.resultados[0]){
                                 campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
                             }else{
                                 campo.value = data.resultados[0][campo.dataset.refKey.toLowerCase()] ?? "0";
                             }
-                            //campo.dispatchEvent(new Event("change")); // opcional
                         }
                     });
+                    calcular_Fila(tr)
+                }
+                //asume formulario
+                if (refInputActivo.parentElement.parentElement.tagName == 'DIV') {
+                    document
+                        .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
+                        .forEach(campo => {
+                            if (campo.dataset.refFrom === refInputActivo.id) {
+                                if(campo.dataset.refKey in data.resultados[0]){
+                                    campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
+                                }else{
+                                    campo.value = data.resultados[0][campo.dataset.refKey.toLowerCase()] ?? "0";
+                                }
+                            }
+                        });
+                }
             }
-            // 🔥 Aplicar referencias adjuntas
+            
             calcularCabecera()
 
 
@@ -400,8 +448,6 @@ function calcularCabecera() {
         const tipo = campo.attributes.data_tipo.value;
 
 
-
-
         if (tipo === 'FormatoTexto') {
 
             const template = campo.dataset.template;
@@ -446,8 +492,12 @@ function calcularCabecera() {
         }
 
         // 🧮 Formula (placeholder para siguiente nivel)
-        if (tipo === 'Formula') {
-            // aquí luego puedes usar funciones tipo SUM, AVG, etc. no aplica a detalle si ni existe subdetalle
+        if (tipo === 'FormulaDetalle') {
+
+            valoresCab[campo.name] = aplicarOperacionFormulaDetalle(campo)
+            campo.value = valoresCab[campo.name]
+
+            
         }
 
         // 🔤 Número a letras
@@ -545,6 +595,73 @@ function calcular_masivoCabecera() {
 
 }
 
+
+function evaluarCondicion(tr, condicion) {
+    //const match = condicion.match(/^(\w+)\s*(=|>=|<=|>|<)\s*(\d+(\.\d+)?)$/);
+    const match = condicion.match(/^(\w+)\s*(==|=|>=|<=|>|<)\s*(-?\d+(\.\d+)?)$/);
+    if (!match) return true;
+
+    const campoCond = match[1];
+    const operador = match[2];
+    const valorCond = parseFloat(match[3]);
+
+    const inputCampo = tr.querySelector(
+        `[data-campo="${campoCond}"], [name="${campoCond}"]`
+    );
+
+    if (!inputCampo) return false;
+
+    const valorFila = parseFloat(inputCampo.value || inputCampo.textContent || 0);
+
+    switch (operador) {
+        case "=": return valorFila === valorCond;
+        case "==": return valorFila === valorCond;
+        case ">": return valorFila > valorCond;
+        case "<": return valorFila < valorCond;
+        case ">=": return valorFila >= valorCond;
+        case "<=": return valorFila <= valorCond;
+        
+        default: return false;
+    }
+}
+
+function aplicarOperacionFormulaDetalle(input) {
+    const operacion = input.dataset.operacion;      // SUM
+    const campo = input.dataset.campo;              // Subtotal
+    const tablaKey  = input.dataset.tabla;            // ventasfacturasdetalle
+    const condicion = input.dataset.condicion;      // ejemplo: tarifaiva > 0
+
+    let total = 0;
+
+    // obtener tabla (DataTable o normal)
+    const tabla = document.getElementById(`tabla-detalles-${tablaKey}`);
+    if (!tabla) return;
+
+    const filas = tabla.querySelectorAll("tbody tr");
+
+    filas.forEach(tr => {
+        let cumple = true;
+
+        // ===== evaluar condición =====
+        if (condicion) {
+            cumple = evaluarCondicion(tr, condicion);
+        }
+
+        if (cumple) {
+            const inputCampo = tr.querySelector(`[data-campo="${campo}"], [name="${campo}"]`);
+            if (inputCampo) {
+                const valor = parseFloat(inputCampo.value || inputCampo.textContent || 0);
+                if (!isNaN(valor)) {
+                    if (operacion === "SUM") {
+                        total += valor;
+                    }
+                }
+            }
+        }
+    });
+
+    return total
+}
 
 document.getElementById("BtnClosemodalReferencia").addEventListener("click", () => {
     const input = document.getElementById("refBuscadorInput");
@@ -842,43 +959,52 @@ function aplicarReglasEnScope(scope) {
    ➕➖ DETALLES (FILAS DINÁMICAS MULTITAB)
 ========================================================= */
 
+function adicionarFila(e) {
+    const btn = e.currentTarget;
+
+    const tabPane = btn.closest('.tab-pane');
+    const container = tabPane.querySelector('.detalles-container');
+
+    if (!container) return;
+
+    const filaBase = container.querySelector('.detalle-fila');
+    if (!filaBase) return;
+
+    const filaspMax = Array.from(
+        document.querySelectorAll(`tr[data-form="${filaBase.dataset.form}"]`)
+    );
+
+    const maxRow = filaspMax.length
+        ? Math.max(...filaspMax.map(f => +f.dataset.row || 0))
+        : 0;
+
+    const nuevaFila = filaBase.cloneNode(true);
+    nuevaFila.dataset.row = maxRow + 1;
+
+    nuevaFila.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = false;
+        } else {
+            el.value = '';
+        }
+    });
+
+    aplicarReglasEnScope(nuevaFila);
+    container.appendChild(nuevaFila);
+        // 🔥 AQUÍ EL FOCUS
+    const primerInput = nuevaFila.querySelector(
+        'input:not([type="hidden"]), select, textarea'
+    );
+
+    if (primerInput) {
+        primerInput.focus();
+    }
+}
+
 function inicializarDetalles() {
 
     document.querySelectorAll('.agregar-fila').forEach(btnAgregar => {
-
-        btnAgregar.addEventListener('click', function () {
-
-            // buscar el tab actual
-            const tabPane = this.closest('.tab-pane');
-
-            // buscar el container dentro del tab
-            const container = tabPane.querySelector('.detalles-container');
-
-            if (!container) return;
-
-            const filaBase = container.querySelector('.detalle-fila');
-
-            if (!filaBase) return;
-
-            const nuevaFila = filaBase.cloneNode(true);
-
-            // limpiar valores
-            nuevaFila.querySelectorAll('input, select, textarea').forEach(el => {
-
-                if (el.type === 'checkbox' || el.type === 'radio') {
-                    el.checked = false;
-                } else {
-                    el.value = '';
-                }
-
-            });
-
-            aplicarReglasEnScope(nuevaFila);
-
-            container.appendChild(nuevaFila);
-
-        });
-
+        btnAgregar.addEventListener('click', adicionarFila);
     });
 
     // eliminar fila
@@ -889,6 +1015,8 @@ function inicializarDetalles() {
         const fila = e.target.closest('.detalle-fila');
 
         const container = fila.closest('.detalles-container');
+        
+
 
         const filas = container.querySelectorAll('.detalle-fila');
 
@@ -1086,5 +1214,74 @@ document.addEventListener("keydown", function(e) {
         if (index > -1 && index < inputs.length - 1) {
             inputs[index + 1].focus();
         }
+
+        const elemento = e.target;
+
+        const filaActual = elemento.closest('tr.detalle-fila');
+        if (!filaActual) return;
+
+        const container = filaActual.closest('.detalles-container');
+        if (!container) return;
+
+        const celdaActual = elemento.closest('td');
+        if (!celdaActual) return;
+
+        // 🔥 solo celdas visibles (sin .d-none)
+        const celdasVisibles = Array.from(
+            filaActual.querySelectorAll('td:not(.d-none)')
+        );
+
+        // 🔥 primera celda visible
+        const primeraCelda = celdasVisibles[0];
+
+        if (celdaActual !== primeraCelda) return;
+
+        const filas = Array.from(container.querySelectorAll('tr.detalle-fila'));
+        const ultimaFila = filas[filas.length - 1];
+
+        if (filaActual === ultimaFila) {
+            adicionarFilaDesdeElemento(elemento);
+        }
+        e.preventDefault();
+        
     }
 });
+
+function adicionarFilaDesdeElemento(elemento) {
+    const tabPane = elemento.closest('.tab-pane');
+    if (!tabPane) return;
+
+    const container = tabPane.querySelector('.detalles-container');
+    if (!container) return;
+
+    const filaBase = container.querySelector('.detalle-fila');
+    if (!filaBase) return;
+
+    const filaspMax = Array.from(
+        document.querySelectorAll(`tr[data-form="${filaBase.dataset.form}"]`)
+    );
+
+    const maxRow = filaspMax.length
+        ? Math.max(...filaspMax.map(f => +f.dataset.row || 0))
+        : 0;
+
+    const nuevaFila = filaBase.cloneNode(true);
+    nuevaFila.dataset.row = maxRow + 1;
+
+    nuevaFila.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = false;
+        } else {
+            el.value = '';
+        }
+    });
+
+    aplicarReglasEnScope(nuevaFila);
+    container.appendChild(nuevaFila);
+
+    const primerInput = nuevaFila.querySelector(
+        'input:not([type="hidden"]), select, textarea'
+    );
+
+    if (primerInput) primerInput.focus();
+}
