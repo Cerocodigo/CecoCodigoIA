@@ -33,3 +33,8 @@ db.sqlite3
 .DS_Store
 Thumbs.db
 /.conda
+
+
+config\settings\base.py
+config\settings\local.py
+config\settings\produccion.py

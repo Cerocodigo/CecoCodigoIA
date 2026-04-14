@@ -34,11 +34,13 @@ NO_EDITABLE_CECOD_TYPES = {
     "NumeroSecuencial",
     "SistemaFecha",
     "SistemaUsuario",
+    "ReferenciaAdjunto",
     "QueryBaseDatos",
     "Operacion",
     "FormatoTexto",
     "Condicional",
     "FormulaDetalle",
+    "LlaveExterna"
 }
 
 
@@ -154,7 +156,7 @@ def build_dynamic_form(campos, company, modelo):
             ref = configuracion.get("referencia")
             campo_origen = configuracion.get("campo_origen")
 
-            if configuracion.get("editable") == "No":
+            if configuracion.get("editable") == "false":
                 widget_attrs["readonly"] = "readonly"
 
             widget_attrs.update({
@@ -194,6 +196,13 @@ def build_dynamic_form(campos, company, modelo):
         # ====================================================
         if tipo_funcional == "NumeroSimple":
             widget_attrs["data-min"] = configuracion.get("min")
+
+        if tipo_funcional == "FormulaDetalle":
+            
+            widget_attrs["data-operacion"] = configuracion.get("operacion")
+            widget_attrs["data-campo"] = configuracion.get("campo")
+            widget_attrs["data-tabla"] = configuracion.get("tabla")
+            widget_attrs["data-condicion"] = configuracion.get("condicion")
 
         if tipo_funcional == "TextoSimple":
             if configuracion.get("editable") == "No":
