@@ -11,6 +11,7 @@ from core.services.modules.constants import (
     FIELD_REQUIRED_FIELDS,
     MODEL_REQUIRED_FIELDS,
     TIPO_FUNCIONAL_META,
+    AREAS_ROL,
 )
 
 from core.services.modules.model_validator_service import ModelValidatorService
@@ -32,7 +33,7 @@ class ModelCorrectionService:
             ├── Corregir metadata general
             └── Corregir campos
     """
-    
+
     # ==================================================
     # ENTRYPOINT PRINCIPAL
     # ==================================================
@@ -105,6 +106,8 @@ class ModelCorrectionService:
     def _correct_fields(cls, data, changes):
         """Aplica correcciones a nivel de campos dentro del modelo."""
         campos = data.get("campos", [])
+        rol = data.get("rol")
+        config_area = AREAS_ROL.get(rol, AREAS_ROL["cabecera"])
 
         for i, campo in enumerate(campos):
             path = f"campos[{i}]"
@@ -161,20 +164,16 @@ class ModelCorrectionService:
             cls._correct_config(campo, path, changes)
 
             # -------------------------
-            # 7. REGLA ESPECIAL: DETALLE → TODO MAIN
+            # 7. VALIDAR O ASIGNAR AREA SEGÚN ROL
             # -------------------------
-            if data.get("rol") == "detalle":
-                if campo.get("area") != "main":
-                    campo["area"] = "main"
-                    changes.append(f"{path}.area forzado a main")
+            if "area" not in campo or campo.get("area") not in config_area["areas_validas"]:
+                campo["area"] = config_area["area_default"]
+                changes.append(f"{path}.area corregido a default")
 
         # -------------------------
         # 8. REORDENAMIENTO
         # -------------------------
-        if data.get("rol") == "detalle":
-            cls._fix_orders_detalle(campos, changes)
-        else:
-            cls._fix_orders(campos, changes)
+        cls._fix_orders(campos, changes)
 
     # ==================================================
     # CORRECCIÓN DE CONFIGURACIÓN
@@ -231,7 +230,7 @@ class ModelCorrectionService:
 
         areas = {}
         for idx, campo in enumerate(campos):
-            area = campo.get("area", "main")
+            area = campo.get("area")
             areas.setdefault(area, []).append((idx, campo))
 
         for area, items in areas.items():
@@ -250,30 +249,6 @@ class ModelCorrectionService:
                     campo["orden"] = new_order
                     changes.append(f"campos[{idx}].orden {old}->{new_order}")
 
-    # ==================================================
-    # REORDENAMIENTO ESPECIAL (DETALLE)
-    # ==================================================
-    @staticmethod
-    def _fix_orders_detalle(campos, changes):
-        """ 
-        Aplica correcciones de ordenamiento a los campos de un modelo detalle.
-        En modelos detalle se ignoran las áreas y se ordena todo en una sola secuencianciada. Campos sin orden se colocan al final.
-        """
-
-        # Ignora áreas → orden global único
-        items_sorted = sorted(
-            list(enumerate(campos)),
-            key=lambda x: (
-                x[1].get("orden") if isinstance(x[1].get("orden"), int) else 9999,
-                x[0]
-            )
-        )
-
-        for new_order, (idx, campo) in enumerate(items_sorted, start=1):
-            old = campo.get("orden")
-            if old != new_order:
-                campo["orden"] = new_order
-                changes.append(f"campos[{idx}].orden {old}->{new_order}")
 
     # ==================================================
     # UTILIDADES

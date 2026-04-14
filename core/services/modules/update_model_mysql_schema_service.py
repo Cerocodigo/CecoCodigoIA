@@ -51,43 +51,8 @@ class UpdateModelMySQLSchemaService:
             "columns_modified": [],
             "columns_deleted": []
         }
-        """
+        """           
 
-
-        # =========================
-        # 1️⃣ Obtener modelo Mongo
-        # =========================
-        print("1 Obtener modelo Mongo")
-        model = ModelQueryService.get_model_by_id(
-            company=company,
-            model_id=model_id,
-            is_raw=True,
-        )
-
-        if not model:
-            raise ValueError("Modelo MongoDB no encontrado")
-
-        # =========================
-        # 2️⃣ VALIDAR MODELO
-        # =========================
-        print("2 VALIDAR MODELO")
-
-        validation = ModelValidatorService.validate(model)
-        print("Validation: ", validation)
-        print("---------------------")
-        
-        for error in validation["errors"]:
-            print(">>>", error)
-
-
-        if not validation["is_valid"]:
-            error_messages = "\n".join(
-                [f"Error en : {e['ubicacion']}: Tipo de error: {e['tipoError']}, el elemento {e['elemento']}. La sugerencia es: {e['sugerenciaCorreccion']}" for e in validation["errors"]]
-            )
-            raise ValueError(
-                f"Modelo inválido. Corrige los siguientes errores:\n{error_messages}"
-            )
-            
 
         table_name = model["tabla"]
         campos = model.get("campos", [])
@@ -95,7 +60,6 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # Infraestructura MySQL
         # =========================
-        print("3 Infraestructura MySQL")
         connection = MySQLCompanyConnectionService.get_connection_for_company(
             company=company
         )
@@ -106,7 +70,6 @@ class UpdateModelMySQLSchemaService:
         # =========================
         # Verificar existencia tabla
         # =========================
-        print("4 Verificar si la tabla existe")
         sql_exists = """
             SELECT COUNT(*) AS total
             FROM information_schema.tables
@@ -145,7 +108,6 @@ class UpdateModelMySQLSchemaService:
                 table_name=table_name,
                 columns=list(mongo_columns.values()),
             )
-            print('>>>', sql)
             ddl.create_table(sql)
 
             result_summary["created"] = True

@@ -243,20 +243,20 @@ def calculosReferenciaBuscador(request, modelo, campo, fila=None):
     # =========================
     # Obtener modelos (Mongo)
     # =========================
-    models = ModelQueryService.get_models_byId(
+    model = ModelQueryService.get_model_by_id(
         company=company,
-        module_id=modelo,
+        model_id=modelo,
         is_raw=True,
     )
 
-    if not models:
+    if not model:
         return JsonResponse({"estado": False, "msg": "modelo no encontrado"})
 
     # =========================
     # Buscar campo
     # =========================
     campo_conf = next(
-        (c for c in models[0].get("campos", []) if c.get("nombre") == campo),
+        (c for c in model.get("campos", []) if c.get("nombre") == campo),
         None
     )
 
@@ -387,18 +387,18 @@ def calculosNumeroSecuencial(request, modelo, campo, fila=None):
     # =========================
     # Obtener modelos del módulo (Mongo)
     # =========================
-    models = ModelQueryService.get_models_byId(
+    model = ModelQueryService.get_model_by_id(
         company=company,
-        module_id=modelo,
+        model_id=modelo,
         is_raw=True,
     )
 
-    if not models:
+    if not model:
         return JsonResponse({"estado": False, "msg": "modelo no encontrado"})
 
     # 2️⃣ Buscar campo
     campo_conf = next(
-        (c for c in models[0].get("campos", []) if c.get("nombre") == campo),
+        (c for c in model.get("campos", []) if c.get("nombre") == campo),
         None
     )
 
@@ -414,7 +414,7 @@ def calculosNumeroSecuencial(request, modelo, campo, fila=None):
         })
 
     campo = campo_conf.get("nombre")
-    tabla = models.get("tabla")
+    tabla = model.get("tabla")
     sql = f"""
         SELECT COALESCE(MAX({campo}), 0) AS actual
         FROM {tabla}
@@ -479,20 +479,20 @@ def calculosQueryBaseDatos(request, modelo, campo, fila=None):
     # =========================
     # Obtener modelo
     # =========================
-    models = ModelQueryService.get_models_byId(
+    model = ModelQueryService.get_model_by_id(
         company=company,
-        module_id=modelo,
+        model_id=modelo,
         is_raw=True,
     )
 
-    if not models:
+    if not model:
         return JsonResponse({"estado": False, "msg": "modelo no encontrado"})
 
     # =========================
     # Buscar campo
     # =========================
     campo_conf = next(
-        (c for c in models[0].get("campos", []) if c.get("nombre") == campo),
+        (c for c in model.get("campos", []) if c.get("nombre") == campo),
         None
     )
 

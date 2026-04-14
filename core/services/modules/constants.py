@@ -19,7 +19,6 @@ MODEL_REQUIRED_FIELDS = {
     },
     "detalle_extra": {
         "fk",
-        "descripcion",
     }
 }
 
@@ -61,12 +60,23 @@ FIELD_DEFAULTS = {
     "requerido": False,
     "configuracion": {},
     "col": 6,
-    "area": "main",
     "valor_default": None,
     "placeholder": "",
     "ayuda": "",
 }
 
+AREAS_ROL = {
+    "cabecera": {
+        "areas_validas": ["Main-Arriba", "Side-Arriba", "Main-Abajo", "Side-Abajo"],
+        "area_default": "Main-Arriba",
+    },
+    "detalle": {
+        "areas_validas": ["Main"],
+        "area_default": "Main",
+    }
+}
+
+ROLES_VALIDOS = set(AREAS_ROL.keys())
 
 
 # =========================

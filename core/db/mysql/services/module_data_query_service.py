@@ -10,6 +10,8 @@ from core.db.mysql.executor import MySQLExecutor
 from core.db.mysql.services.dml_service import MySQLDMLService
 from core.db.mysql.sql.sql_generator import SQLGenerator
 
+from core.services.modules.constants import AREAS_ROL
+
 
 class ModuleDataQueryService:
     """
@@ -26,19 +28,27 @@ class ModuleDataQueryService:
         """
         Construye lista de columnas SQL considerando:
 
-        - Siempre incluir campo con "tipo_base": "pk" aunque visible=False
-        - Solo incluir visible=True (excepto pk)
-        - Ordenar primero area="main"
-        - Luego area="side"
-        - Orden ascendente por campo["orden"]
+        - Siempre incluir PK
+        - Solo visible=True (excepto pk)
+        - Orden EXACTO según AREAS_ROL
+        - Orden interno por campo["orden"]
         """
 
         if not campos:
             return []
 
-        main_fields = []
-        side_fields = []
+        from core.services.modules.constants import AREAS_ROL
+
+        grouped = {}
         pk_field = None
+
+        # Obtener orden de áreas para cabecera (rol principal de tabla)
+        config = AREAS_ROL.get("cabecera")
+        ordered_areas = config["areas_validas"]
+
+        # Inicializar grupos respetando orden
+        for area in ordered_areas:
+            grouped[area] = []
 
         for campo in campos:
             nombre = campo.get("nombre")
@@ -53,26 +63,22 @@ class ModuleDataQueryService:
             if not visible:
                 continue
 
-            if area == "main":
-                main_fields.append((orden, nombre))
-            elif area == "side":
-                side_fields.append((orden, nombre))
+            if area in grouped:
+                grouped[area].append((orden, nombre))
 
-        # Ordenar por orden ascendente
-        main_fields.sort(key=lambda x: x[0])
-        side_fields.sort(key=lambda x: x[0])
+        # Ordenar dentro de cada área
+        for area in grouped:
+            grouped[area].sort(key=lambda x: x[0])
 
         ordered_columns = []
 
-        # Siempre primero el PK si existe
+        # PK siempre primero
         if pk_field:
             ordered_columns.append(pk_field)
 
-        # Luego main
-        ordered_columns.extend([nombre for _, nombre in main_fields])
-
-        # Luego side
-        ordered_columns.extend([nombre for _, nombre in side_fields])
+        # 🔥 RESPETA EXACTAMENTE EL ORDEN DEL ARRAY
+        for area in ordered_areas:
+            ordered_columns.extend([nombre for _, nombre in grouped[area]])
 
         return ordered_columns
 

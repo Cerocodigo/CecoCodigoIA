@@ -62,32 +62,33 @@ class ModelQueryService:
 
         return models
     
-    def get_models_byId(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
-        """
-        Devuelve todos los modelos activos
-        asociados a un módulo.
+    # Obsoleta
+    # def get_models_byId(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
+    #     """
+    #     Devuelve todos los modelos activos
+    #     asociados a un módulo.
 
-        Ej:
-        module_id = "clientes"
-        """
+    #     Ej:
+    #     module_id = "clientes"
+    #     """
 
-        collection = ModelQueryService.get_collection(company)
+    #     collection = ModelQueryService.get_collection(company)
 
-        models = list(
-            collection.find(
-                {
-                    "_id": module_id,
-                    "activo": True,
-                }
-            )
-        )
+    #     models = list(
+    #         collection.find(
+    #             {
+    #                 "_id": module_id,
+    #                 "activo": True,
+    #             }
+    #         )
+    #     )
 
-        # Normalizamos _id a string
-        if not is_raw:
-            for model in models:
-                model["id"] = str(model["_id"])
+    #     # Normalizamos _id a string
+    #     if not is_raw:
+    #         for model in models:
+    #             model["id"] = str(model["_id"])
 
-        return models
+    #     return models
 
     @staticmethod
     def get_models_for_module_rol(*, company, module_id: str, module_rol: str, is_raw: bool = False) -> list[dict]:
@@ -153,33 +154,38 @@ class ModelQueryService:
         collection = ModelQueryService.get_collection(company)
 
         model_id = module_id
-        pk_name = f"id_{model_id}"
 
         if collection.find_one({"_id": model_id}):
             raise ValueError("Ya existe un modelo para este módulo")
 
         pk_field = {
-            "nombre": pk_name,
-            "tipo_base": "int",
+            "visible": False,
+            "nombre": "Secuencial",
+            "etiqueta": "Secuencial",
+            "tipo_base": "pk",
             "tipo_funcional": "NumeroSecuencial",
-            "editable": False,
             "requerido": True,
-            "uso": {
-                "participa_en": ["identidad"]
+            "configuracion": {
+                "inicio": 1,
+                "incremento": 1
             },
-            "gap": 10,
+            "orden": 1,
+            "col": 12,
             "area": "main",
+            "valor_default": 0,
+            "placeholder": "",
+            "ayuda": f"Identificador único del {module_id}"
         }
 
         document = {
             "_id": model_id,
             "activo": True,
             "tabla": model_id,
+            "display": nombre or module_id.capitalize().replace("_", " "),
             "rol": "cabecera",
-            "pk": pk_name,
+            "pk": "Secuencial",
             "campos": [pk_field],
             "modulo": module_id,
-            "creado_en": datetime.utcnow(),
         }
 
         collection.insert_one(document)
