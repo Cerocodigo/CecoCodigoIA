@@ -10,7 +10,9 @@ from core.services.modules.constants import (
     CECOD_TYPES,
     CECOD_CONFIG_META,
     SQL_TYPE_META,
-    TIPO_FUNCIONAL_META
+    TIPO_FUNCIONAL_META,
+    AREAS_ROL,
+    ROLES_VALIDOS,
 )
 
 
@@ -78,7 +80,6 @@ class ModelValidatorService:
         Si es string → intenta parsear.
         Si falla → error crítico.
         """
-
         if isinstance(model_json, dict):
             return model_json
 
@@ -106,7 +107,6 @@ class ModelValidatorService:
             - faltantes
             - sobrantes
         """
-
         required = set(MODEL_REQUIRED_FIELDS["base"])
 
         if data.get("rol") == "detalle":
@@ -122,13 +122,24 @@ class ModelValidatorService:
     def _validate_metadata_semantics(cls, data, errors):
         """
         Valida coherencia lógica de metadata.
-
+        
+        ✔ Roles válidos
         ✔ Slugs válidos
         ✔ PK existente
         ✔ FK (si aplica)
         """
+        # Validación de rol
+        rol = data.get("rol")
 
-        # Validación de slug (_id y tabla)
+        if rol not in ROLES_VALIDOS:
+            errors.append({
+                "tipoError": "rol inválido",
+                "ubicacion": "rol",
+                "elemento": rol,
+                "sugerenciaCorreccion": f"Debe ser uno de {list(ROLES_VALIDOS)}"
+            })
+
+        # Validación de slug para _id y tabla
         for key in ["_id", "tabla"]:
             val = data.get(key)
             if val and not re.match(r"^[a-z0-9_]+$", val):
@@ -152,7 +163,7 @@ class ModelValidatorService:
             })
 
         # FK solo en detalle
-        if data.get("rol") == "detalle":
+        if rol == "detalle":
             if data.get("fk") not in nombres:
                 errors.append({
                     "tipoError": "FK inválido",
@@ -193,6 +204,9 @@ class ModelValidatorService:
 
         nombres = set()
         orden_area = set()
+
+        rol = data.get("rol")
+        config_area = AREAS_ROL.get(rol, AREAS_ROL["cabecera"])
 
         for i, campo in enumerate(campos):
             path = f"campos[{i}]"
@@ -253,8 +267,19 @@ class ModelValidatorService:
                     "sugerenciaCorreccion": result["error"]
                 })
 
+            # validación de área
+            area = campo.get("area")
+
+            if area not in config_area["areas_validas"]:
+                errors.append({
+                    "tipoError": "Área inválida",
+                    "ubicacion": f"{path}.area",
+                    "elemento": area,
+                    "sugerenciaCorreccion": f"Debe ser una de {config_area['areas_validas']}"
+                })
+
             # orden único por área
-            key = (campo.get("area"), campo.get("orden"))
+            key = (area, campo.get("orden"))
             if key in orden_area:
                 errors.append({
                     "tipoError": "Orden duplicado",
@@ -263,17 +288,6 @@ class ModelValidatorService:
                     "sugerenciaCorreccion": "Duplicado en área"
                 })
             orden_area.add(key)
-
-            # validación especial para modelos tipo detalle
-            if data.get("rol") == "detalle":
-                if campo.get("area") != "main":
-                    errors.append({
-                        "tipoError": "Área inválida",
-                        "ubicacion": f"{path}.area",
-                        "elemento": campo.get("area"),
-                        "sugerenciaCorreccion": "Solo 'main' permitido"
-                    })
-         
 
     # =========================
     # CONFIG
