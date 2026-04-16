@@ -137,12 +137,12 @@ def module_view_reg_view(request, module_id: str, id: int):
                 
 
         # ---------- UPDATE ----------
-        FormCab = build_dynamic_form(campos_cab, company, cab_id)
+        FormCab = build_dynamic_form(campos_cab, company, cab_id, False)
         form_cab = FormCab(request.POST)
 
         forms_detalle = []
         for det in modelos_det:
-            FormDet = build_dynamic_form(det["campos"], company, det["_id"])
+            FormDet = build_dynamic_form(det["campos"], company, det["_id"], True)
             i = 0
             while f"{det['tabla']}_{i}-" in "".join(request.POST.keys()):
                 forms_detalle.append({
@@ -222,7 +222,7 @@ def module_view_reg_view(request, module_id: str, id: int):
             "id": id,
         })
 
-    FormCab = build_dynamic_form(campos_cab, company, cab_id)
+    FormCab = build_dynamic_form(campos_cab, company, cab_id, False)
 
     initial_cab = {}
     for campo in campos_cab:
@@ -257,11 +257,12 @@ def module_view_reg_view(request, module_id: str, id: int):
             except Exception:
                 pass
         
-        FormDet = build_dynamic_form(det["campos"], company, det['_id'])
+        FormDet = build_dynamic_form(det["campos"], company, det['_id'], True)
         forms = []
 
         for i, row in enumerate(rows):
             form_instance = FormDet(initial=row, prefix=f"{det['tabla']}_{i}")
+            
 
             if is_view:
                 for field in form_instance.fields.values():

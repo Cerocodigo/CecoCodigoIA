@@ -100,19 +100,30 @@ def module_new_reg_view(request, module_id: str):
 
         # === CABECERA ===
         FormCabecera = build_dynamic_form(
-            modelo_cab["campos"], company, modelo_cab["_id"], 
+            modelo_cab["campos"], company, modelo_cab["_id"], False
         )
         
         form_cab = FormCabecera(request.POST, request.FILES)
         # === DETALLES ===
         forms_detalle = []
+
         for det in modelos_det:
-            FormDet = build_dynamic_form(det["campos"], company, det["_id"])
-            form_det = FormDet(request.POST, prefix=str(det["_id"]))
-            forms_detalle.append({
-                "modelo": det,
-                "form": form_det
-            })
+            FormDet = build_dynamic_form(det["campos"], company, det["_id"], True)
+
+            prefix_base = f"{det['tabla']}_"
+            indices = set()
+
+            for key in request.POST.keys():
+                if key.startswith(prefix_base):
+                    idx = key.split("-")[0].replace(prefix_base, "")
+                    indices.add(idx)
+
+            for i in sorted(indices):
+                form_det = FormDet(request.POST, prefix=f"{prefix_base}{i}")
+                forms_detalle.append({
+                    "modelo": det,
+                    "form": form_det
+                })
 
         # =========================
         # VALIDACIÓN
@@ -144,16 +155,26 @@ def module_new_reg_view(request, module_id: str):
                 return redirect(url)
 
             except Exception as e:
+                formularios_map = {}
+
+                for f in forms_detalle:
+                    modelo_id = f["modelo"]["_id"]
+
+                if modelo_id not in formularios_map:
+                    formularios_map[modelo_id] = {
+                        "modelo_id": modelo_id,
+                        "entidad": f["modelo"]["tabla"],
+                        "display": f["modelo"]["display"],
+                        "forms": []
+                    }
+
+                formularios_map[modelo_id]["forms"].append(f["form"])
+
+                formularios_detalle = list(formularios_map.values())
+
                 return render(request, "core/modules/module_new_reg.html", {
                     "form": form_cab,
-                    "formularios_detalle": [
-                        {
-                            "modelo_id": f["modelo"]["_id"],
-                            "entidad": f["modelo"]["tabla"],
-                            "display": f["modelo"]["display"],
-                            "forms": [f["form"]]
-                        } for f in forms_detalle
-                    ],
+                    "formularios_detalle":formularios_detalle,
                     "error": str(e),
                     "titulo_topbar": module["nombre"] + " - Nuevo registro",
                     "module": module,
@@ -165,17 +186,28 @@ def module_new_reg_view(request, module_id: str):
                 })
 
         else:
+
+            formularios_map = {}
+
+            for f in forms_detalle:
+                modelo_id = f["modelo"]["_id"]
+
+                if modelo_id not in formularios_map:
+                    formularios_map[modelo_id] = {
+                        "modelo_id": modelo_id,
+                        "entidad": f["modelo"]["tabla"],
+                        "display": f["modelo"]["display"],
+                        "forms": []
+                    }
+
+                formularios_map[modelo_id]["forms"].append(f["form"])
+
+            formularios_detalle = list(formularios_map.values())
+            
             # ❌ Validación fallida
             return render(request, "core/modules/module_new_reg.html", {
                 "form": form_cab,
-                "formularios_detalle": [
-                    {
-                        "modelo_id": f["modelo"]["_id"],
-                        "entidad": f["modelo"]["tabla"],
-                        "display": f["modelo"]["display"],
-                        "forms": [f["form"]]
-                    } for f in forms_detalle
-                ],
+                "formularios_detalle":formularios_detalle,
                 "titulo_topbar": module["nombre"] + " - Nuevo registro",
                 "module": module,
                 "empresa": company,
@@ -189,7 +221,7 @@ def module_new_reg_view(request, module_id: str):
     # GET (formulario vacío)
     # =========================
     FormCabecera = build_dynamic_form(
-        modelo_cab["campos"], company, modelo_cab["_id"]
+        modelo_cab["campos"], company, modelo_cab["_id"], False
     )
 
     FormsDetalle = []
@@ -198,7 +230,7 @@ def module_new_reg_view(request, module_id: str):
             "modelo_id": det["_id"],
             "entidad": det["tabla"],
             "display": det["display"],
-            "form": build_dynamic_form(det["campos"], company, det["_id"])
+            "form": build_dynamic_form(det["campos"], company, det["_id"], True)
         })
 
     return render(request, "core/modules/module_new_reg.html", {
@@ -208,7 +240,8 @@ def module_new_reg_view(request, module_id: str):
                 "modelo_id": fDet["modelo_id"],
                 "entidad": fDet["entidad"],
                 "display": fDet["display"],
-                "forms": [fDet["form"]()]
+                #"forms": [fDet["form"]()]
+                "forms": [fDet["form"](prefix=f"{fDet['entidad']}_0")]
             } for fDet in FormsDetalle
         ],
         "titulo_topbar": module["nombre"] + " - Nuevo registro",
