@@ -12,6 +12,9 @@ BASE_FIELD_TYPES = {
     "string": forms.CharField,
     "char": forms.CharField,
     "decimal": forms.DecimalField,
+    "decimal2": forms.DecimalField,
+    "decimal4": forms.DecimalField,
+    "decimal6": forms.DecimalField,
     "int": forms.IntegerField,
     "email": forms.EmailField,
     "boolean": forms.BooleanField,
@@ -43,8 +46,8 @@ NO_EDITABLE_CECOD_TYPES = {
     "LlaveExterna"
 }
 
-
-def build_dynamic_form(campos, company, modelo):
+def build_dynamic_form(campos, company, modelo, es_detalle=False):
+    #def build_dynamic_form(campos, company, modelo):
     form_fields = {}
     campos = sorted(campos, key=lambda c: c.get("orden", 1000))
 
@@ -61,8 +64,8 @@ def build_dynamic_form(campos, company, modelo):
         col = campo.get("col", 3)
         gap = campo.get("gap", 0)
         gap_top = campo.get("gap_top", 0)
-        break_line = campo.get("break", False)
-        area = campo.get("area", "main")
+        break_line = campo.get("break", 0)
+        area = campo.get("area", "Main-Arriba")
 
         # attrs base
         widget_attrs = {
@@ -76,12 +79,34 @@ def build_dynamic_form(campos, company, modelo):
             "visible": visible,
             "data_tipo": tipo_funcional,
             "data-modelo": modelo,
+            "data-name": nombre,
+            
+            
             
         }
+        if es_detalle:
+            widget_attrs["data-name"] = nombre  # opcional (para JS)
+            widget_attrs.pop("id", None)  # ❌ evitar IDs repetidos
+        else:
+            widget_attrs["id"] = f"id_{nombre}"
 
         # 🔒 regla global
         if tipo_funcional in NO_EDITABLE_CECOD_TYPES:
             widget_attrs["readonly"] = "readonly"
+
+
+        if tipo_base == "int":
+            widget_attrs["data-decimales"] = 0
+        if tipo_base == "decimal":
+            widget_attrs["data-decimales"] = 2
+        if tipo_base == "decimal2":
+            widget_attrs["data-decimales"] = 2
+
+        if tipo_base == "decimal4":
+            widget_attrs["data-decimales"] = 4
+
+        if tipo_base == "decimal6":
+            widget_attrs["data-decimales"] = 6
 
         # ====================================================
         # 🔽 OPCIÓN MÚLTIPLE
@@ -160,7 +185,7 @@ def build_dynamic_form(campos, company, modelo):
                 widget_attrs["readonly"] = "readonly"
 
             widget_attrs.update({
-                "data-ref-from": f"id_{ref}",
+                "data-ref-from": f"{ref}",
                 "data-ref-key": campo_origen,
             })
 
@@ -196,6 +221,7 @@ def build_dynamic_form(campos, company, modelo):
         # ====================================================
         if tipo_funcional == "NumeroSimple":
             widget_attrs["data-min"] = configuracion.get("min")
+            
 
         if tipo_funcional == "FormulaDetalle":
             
@@ -268,6 +294,7 @@ def build_dynamic_form(campos, company, modelo):
             kwargs["decimal_places"] = 2
             kwargs["max_digits"] = 18
 
+
         if tipo_base == "decimal2":
             kwargs["decimal_places"] = 2
             kwargs["max_digits"] = 18
@@ -279,7 +306,6 @@ def build_dynamic_form(campos, company, modelo):
         if tipo_base == "decimal6":
             kwargs["decimal_places"] = 6
             kwargs["max_digits"] = 18
-
 
         if tipo_base == "date":
             kwargs["widget"] = widgets.DateInput(

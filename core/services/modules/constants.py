@@ -39,6 +39,9 @@ FIELD_REQUIRED_FIELDS = {
     "valor_default",
     "placeholder",
     "ayuda",
+    "break",
+    "gap",
+    "gap_top"
 }
 
 
@@ -63,6 +66,9 @@ FIELD_DEFAULTS = {
     "valor_default": None,
     "placeholder": "",
     "ayuda": "",
+    "break":'0',
+    "gap":'0',
+    "gap_top":'0',
 }
 
 AREAS_ROL = {
@@ -89,7 +95,7 @@ TIPO_FUNCIONAL_META = {
         "base_default": "string",
     },
     "NumeroSimple": {
-        "bases_validas": {"int", "integer", "decimal2", "decimal4", "decimal6"},
+        "bases_validas": {"int", "integer", "decimal", "decimal2", "decimal4", "decimal6"},
         "base_default": "decimal2",
     },
     "NumeroSecuencial": {
@@ -109,23 +115,23 @@ TIPO_FUNCIONAL_META = {
         "base_default": "string",
     },
     "Referencia": {
-        "bases_validas": {"fk"},
+        "bases_validas": {"fk", "int", "integer", "string"},
         "base_default": "fk",
     },
     "ReferenciaBuscador": {
-        "bases_validas": {"fk"},
+        "bases_validas": {"fk", "int", "integer", "string"},
         "base_default": "fk",
     },
     "ReferenciaAdjunto": {
-        "bases_validas": {"string"},
+        "bases_validas": {"string", "decimal", "decimal2", "decimal4", "decimal6"},
         "base_default": "string",
     },
     "QueryBaseDatos": {
-        "bases_validas": {"string"},
+        "bases_validas": {"string", "decimal", "decimal2", "decimal4", "decimal6"},
         "base_default": "string",
     },
     "Operacion": {
-        "bases_validas": {"decimal2", "decimal4", "decimal6"},
+        "bases_validas": {"decimal", "decimal2", "decimal4", "decimal6"},
         "base_default": "decimal2",
     },
     "FormatoTexto": {
@@ -141,13 +147,18 @@ TIPO_FUNCIONAL_META = {
         "base_default": "string",
     },
     "FormulaDetalle": {
-        "bases_validas": {"decimal2", "decimal4", "decimal6","int", "integer"},
+        "bases_validas": {"decimal", "decimal2", "decimal4", "decimal6", "int", "integer"},
         "base_default": "decimal2",
     },
     "FechaRegistro": {
-        "bases_validas": {},
-        "base_default": "",
+        "bases_validas": {'date', 'datetime'},
+        "base_default": "date",
     },
+    "LlaveExterna": {
+        "bases_validas": {'int', 'fk'},
+        "base_default": "fk",
+    },
+    
 
 }
 
@@ -304,7 +315,6 @@ CECOD_CONFIG_META = {
             "label_field",
             "value_field",
             "campo_principal",
-            "campos_filtrables",
             "valor_inicial",
         },
         "defaults": None,
@@ -364,5 +374,8 @@ CECOD_CONFIG_META = {
             "editable": "No",
         },
     },
-
+    "LlaveExterna": {
+        "structure": {"entidad", "campo"},
+        "defaults":None
+    },
 }

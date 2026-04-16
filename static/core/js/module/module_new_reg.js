@@ -16,7 +16,7 @@ function abrirReferenciaBuscadorDetalle(btn) {
     refInputActivo = btn.closest(".input-group").querySelector("input");
 
     const modelo = refInputActivo.dataset.modelo;
-    const campo = refInputActivo.name;
+    const campo = refInputActivo.dataset['name']
 
     refConfigActual = { modelo, campo };
 
@@ -72,7 +72,7 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
                 const filas = document.querySelectorAll('tr[data-row="'+data.fila+'"]');
 
                 filas.forEach(tr => {
-                    const inputbuscador = tr.querySelector('#id_' + data.Campo);
+                    const inputbuscador = tr.querySelector(`[data-name="${data.Campo}"]`);
                     if (inputbuscador) {
                         refInputActivo = inputbuscador
                     }
@@ -80,14 +80,14 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
             }
 
 
-            if (!data.estado || !data.resultados){
+            if (!data.estado || !data.resultados || data.resultados.length == 0){
                                 //asume detalle
                 if (refInputActivo.parentElement.parentElement.tagName == 'TD') {
 
                     const tr = refInputActivo.closest("tr");
 
                     tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
-                        if (campo.dataset.refFrom === refInputActivo.id) {
+                        if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
                                 campo.value = '0'
                         }
                     });
@@ -98,7 +98,7 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
                     document
                         .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
                         .forEach(campo => {
-                            if (campo.dataset.refFrom === refInputActivo.id) {
+                            if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
                                 campo.value = '0'
                             }
                         });
@@ -116,7 +116,7 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
                     const tr = refInputActivo.closest("tr");
 
                     tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
-                        if (campo.dataset.refFrom === refInputActivo.id) {
+                        if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
                             if(campo.dataset.refKey in data.resultados[0]){
                                 campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
                             }else{
@@ -131,7 +131,7 @@ function buscarReferenciaDirecto(q, refConfigActual, input) {
                     document
                         .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
                         .forEach(campo => {
-                            if (campo.dataset.refFrom === refInputActivo.id) {
+                            if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
                                 if(campo.dataset.refKey in data.resultados[0]){
                                     campo.value = data.resultados[0][campo.dataset.refKey] ?? "0";
                                 }else{
@@ -258,7 +258,7 @@ function seleccionarReferencia(row) {
         const tr = refInputActivo.closest("tr");
 
         tr.querySelectorAll('input[data_tipo="ReferenciaAdjunto"]').forEach(campo => {
-            if (campo.dataset.refFrom === refInputActivo.id) {
+            if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
 
                 if(campo.dataset.refKey in row){
                     campo.value = row[campo.dataset.refKey] ?? "0";
@@ -276,7 +276,7 @@ function seleccionarReferencia(row) {
             .querySelectorAll('input[data_tipo="ReferenciaAdjunto"]')
             .forEach(campo => {
 
-                if (campo.dataset.refFrom === refInputActivo.id) {
+                if (campo.dataset.refFrom === refInputActivo.dataset['name']) {
 
                     if(campo.dataset.refKey in row){
                         campo.value = row[campo.dataset.refKey] ?? "0";
@@ -307,7 +307,7 @@ function calcular_Fila(tr) {
             val = parseFloat(val);
         }
 
-        valores[el.name] = val;
+        valores[el.dataset['name']] = val;
     });
 
     // 2️⃣ Procesar campos operativos
@@ -323,7 +323,7 @@ function calcular_Fila(tr) {
             const resultado = calcular_valor_Operacion(formula, valores);
 
             if (resultado !== null && !isNaN(resultado)) {
-                valores[campo.name] = resultado;
+                valores[campo.dataset['name']] = resultado;
                 campo.value = resultado;
                 //campo.dispatchEvent(new Event('change'));
             }
@@ -485,8 +485,8 @@ function calcularCabecera() {
             const resultado = calcular_valor_Operacion(formula, valoresCab);
 
             if (resultado !== null && !isNaN(resultado)) {
-                valoresCab[campo.name] = resultado;
-                campo.value = resultado;
+                valoresCab[campo.name] = resultado.toFixed(campo.dataset['decimales']);
+                campo.value = resultado.toFixed(campo.dataset['decimales']);
                 //campo.dispatchEvent(new Event('change'));
             }
         }
@@ -494,8 +494,8 @@ function calcularCabecera() {
         // 🧮 Formula (placeholder para siguiente nivel)
         if (tipo === 'FormulaDetalle') {
 
-            valoresCab[campo.name] = aplicarOperacionFormulaDetalle(campo)
-            campo.value = valoresCab[campo.name]
+            valoresCab[campo.dataset['name']] = aplicarOperacionFormulaDetalle(campo).toFixed(campo.dataset['decimales'])
+            campo.value = valoresCab[campo.dataset['name']]
 
             
         }
@@ -606,7 +606,7 @@ function evaluarCondicion(tr, condicion) {
     const valorCond = parseFloat(match[3]);
 
     const inputCampo = tr.querySelector(
-        `[data-campo="${campoCond}"], [name="${campoCond}"]`
+        `[data-campo="${campoCond}"], [data-name="${campoCond}"]`
     );
 
     if (!inputCampo) return false;
@@ -648,7 +648,7 @@ function aplicarOperacionFormulaDetalle(input) {
         }
 
         if (cumple) {
-            const inputCampo = tr.querySelector(`[data-campo="${campo}"], [name="${campo}"]`);
+            const inputCampo = tr.querySelector(`[data-name="${campo}"], [data-campo="${campo}"]`);
             if (inputCampo) {
                 const valor = parseFloat(inputCampo.value || inputCampo.textContent || 0);
                 if (!isNaN(valor)) {
@@ -706,7 +706,9 @@ document.addEventListener("change", function (e) {
 
                 const refInputActivo = input;
                 const modelo = refInputActivo.dataset.modelo;
-                const campo = refInputActivo.name;
+                const campo =  refInputActivo.dataset['name']
+                //const campo = refInputActivo.name;
+                
                 const q = input.value.trim();
 
                 if (q.length < 2) return;
@@ -789,10 +791,10 @@ document.addEventListener("change", function (e) {
         const scope = fila || document;
 
         scope.querySelectorAll('[data-ref-from]').forEach(el => {
-            if (el.dataset.refFrom === e.target.id) {
+            if (el.dataset.refFrom === e.target.dataset['name']) {
                 if(el.dataset.refKey in opt.dataset){
                     el.value = opt.dataset[el.dataset.refKey] || '';
-                    cambioVariableparaQueary(el.name)
+                    cambioVariableparaQueary(el.dataset['name'])
 
                 }else{
                     console.warn("Referencia no encontrada", {
@@ -809,7 +811,7 @@ document.addEventListener("change", function (e) {
 
     //revisa si el input fue realizado cobre un dato variable para ejecutar QueryBaseDatos
 
-    cambioVariableparaQueary(e.target.name)
+    cambioVariableparaQueary(e.target.dataset['name'])
     calcularCabecera()
 })
 
@@ -980,13 +982,26 @@ function adicionarFila(e) {
 
     const nuevaFila = filaBase.cloneNode(true);
     nuevaFila.dataset.row = maxRow + 1;
+    const nuevoIndex = maxRow + 1;
 
     nuevaFila.querySelectorAll('input, select, textarea').forEach(el => {
+
+        // limpiar valores
         if (el.type === 'checkbox' || el.type === 'radio') {
             el.checked = false;
         } else {
             el.value = '';
         }
+
+        // 🔥 ACTUALIZAR NAME (AQUÍ EL FIX REAL)
+        if (el.name) {
+            el.name = el.name.replace(/_(\d+)-/, `_${nuevoIndex}-`);
+        }
+        // 🔥 ACTUALIZAR ID
+        if (el.id) {
+            el.id = el.id.replace(/_(\d+)-/, `_${nuevoIndex}-`);
+        }
+      
     });
 
     aplicarReglasEnScope(nuevaFila);
@@ -1246,7 +1261,6 @@ document.addEventListener("keydown", function(e) {
         
     }
 });
-
 function adicionarFilaDesdeElemento(elemento) {
     const tabPane = elemento.closest('.tab-pane');
     if (!tabPane) return;
@@ -1254,26 +1268,35 @@ function adicionarFilaDesdeElemento(elemento) {
     const container = tabPane.querySelector('.detalles-container');
     if (!container) return;
 
-    const filaBase = container.querySelector('.detalle-fila');
+    const filas = container.querySelectorAll('.detalle-fila');
+    const nuevaIndex = filas.length; // 👈 índice real
+
+    const filaBase = filas[0];
     if (!filaBase) return;
 
-    const filaspMax = Array.from(
-        document.querySelectorAll(`tr[data-form="${filaBase.dataset.form}"]`)
-    );
-
-    const maxRow = filaspMax.length
-        ? Math.max(...filaspMax.map(f => +f.dataset.row || 0))
-        : 0;
-
     const nuevaFila = filaBase.cloneNode(true);
-    nuevaFila.dataset.row = maxRow + 1;
+
+    nuevaFila.dataset.row = nuevaIndex;
+    nuevaFila.dataset.form = nuevaIndex;
 
     nuevaFila.querySelectorAll('input, select, textarea').forEach(el => {
+
+        // 🔥 LIMPIAR VALORES
         if (el.type === 'checkbox' || el.type === 'radio') {
             el.checked = false;
         } else {
             el.value = '';
         }
+
+        // 🔥 ACTUALIZAR NAME
+        if (el.name) {
+            el.name = el.name.replace(/_(\d+)-/, `_${nuevaIndex}-`);
+        }
+        // 🔥 ACTUALIZAR ID
+        if (el.id) {
+            el.id = el.id.replace(/_(\d+)-/, `_${nuevaIndex}-`);
+        }
+      
     });
 
     aplicarReglasEnScope(nuevaFila);
