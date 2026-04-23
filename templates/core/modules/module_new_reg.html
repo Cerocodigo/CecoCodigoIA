@@ -20,6 +20,44 @@
     </div>
     {% endif %}
     <div class="card shadow mb-4">
+        {% if is_view %}
+                <div class="card shadow">
+            <div class="card-body" style="padding-top: 10px;padding-bottom: 10px;">
+                {% if pdf_templates %}
+
+                    <div class="d-flex flex-wrap" style="gap: 4px;">
+
+                        {% for plantilla in pdf_templates %}
+
+                        <button
+                            class="btn btn-danger"
+                            onclick="obtener_datos_pdf_registro(
+                            '{{ plantilla.id }}',
+                            {{ id }}
+                        )"
+                        >
+                            {{ plantilla.nombre }}
+                        </button>
+                    
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="alert alert-warning">
+                        Este módulo no tiene plantillas PDF configuradas.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+        {{ module|json_script:"module-data" }}
+        {{ pdf_templates|json_script:"pdf-templates-data" }}
+        
+        {% endif %}
         <div class="card-body">
     <div class="row">
         <div class="col-lg-12">
@@ -100,7 +138,7 @@
                                 {% else %}
                                 {% if a.data_tipo == "Archivo" %}
                                     {% if id %}
-                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{current_company.id}}/{{field.value}}">
 
                                         {% if not is_view %}
                                              <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
@@ -184,7 +222,7 @@
                                 {% if a.data_tipo == "Archivo" %}
 
                                     {% if id %}
-                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{current_company.id}}/{{field.value}}">
 
                                         {% if not is_view %}
                                              <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
@@ -373,7 +411,7 @@
                                 {% else %}
                                 {% if a.data_tipo == "Archivo" %}
                                     {% if id %}
-                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{current_company.id}}/{{field.value}}">
 
                                         {% if not is_view %}
                                              <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
@@ -455,7 +493,7 @@
                                 {% if a.data_tipo == "Archivo" %}
 
                                     {% if id %}
-                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{company.id}}/{{field.value}}">
+                                        <img id="preview_{{ field.name }}" style="max-width: 200px; margin-top: 10px; display: block;" src="/media/companies/{{current_company.id}}/{{field.value}}">
 
                                         {% if not is_view %}
                                              <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
@@ -546,4 +584,5 @@
 
 {% block extra_js %}
 <script src="{% static 'core/js/module/module_new_reg.js' %}"></script>
+<script src="{% static 'core/js/module/modules_pdf.js' %}"></script>
 {% endblock %}

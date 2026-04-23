@@ -14,13 +14,15 @@ from core.services.reports.report_execution_service import (
 @require_POST
 @csrf_protect
 def execute_report_view(request, report_id: str):
-    company = getattr(request, "company_ctx", None)
+    # =========================
+    # Usuario, empresa y relación usuario-empresa del contexto
+    # =========================
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    if not company:
-        return JsonResponse(
-            {"error": "Empresa no encontrada en el contexto"},
-            status=400,
-        )
+    if not user or not company or not user_company:
+        return JsonResponse({"error": "unauthorized"}, status=401)
 
     try:
         data = json.loads(request.body.decode("utf-8")) if request.body else {}

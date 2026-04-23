@@ -14,21 +14,15 @@ from core.services.dashboard.dashboard_chart_service import (
 @require_GET
 def dashboards_charts_view(request):
     # =========================
-    # Usuario autenticado
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("accounts:login")
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    company = getattr(request, "company_ctx", None)
-    if not company:
-        raise Http404("Empresa no disponible en el contexto")
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
+    
 
     try:
         context = DashboardChartService.cargar_charts(

@@ -34,6 +34,7 @@ class AuthRequiredMiddleware:
         # =========================
         request.user_ctx = None
         request.company_ctx = None
+        request.user_company_ctx = None
         request.permissions = []
 
         # =========================
@@ -69,7 +70,6 @@ class AuthRequiredMiddleware:
             "/create-company/",
             "/join/",
         ]
-        
 
         # =========================
         # Permitir rutas públicas
@@ -128,28 +128,28 @@ class AuthRequiredMiddleware:
             return redirect("/select-company/")
 
         # =========================
-        # Validar relación usuario-empresa
+        # Obtener relación usuario-empresa (ÚNICA QUERY)
         # =========================
-        if not UserCompany.objects.filter(
+        user_company = UserCompany.objects.filter(
             user=user,
             company=company,
             is_active=True
-        ).exists():
+        ).first()
+
+        if not user_company:
             request.session.pop("company_id", None)
             return redirect("/select-company/")
 
         # =========================
         # Validación mínima de entorno MySQL
-        # (solo metadatos, NO conexión)
         # =========================
         if not company.mysql_server or not company.mysql_db_name:
-            # Empresa aún no provisionada completamente
-            # Se fuerza retorno al flujo de selección
             return redirect("/select-company/")
 
         # =========================
         # Inyectar contexto definitivo
         # =========================
         request.company_ctx = company
+        request.user_company_ctx = user_company
 
         return self.get_response(request)

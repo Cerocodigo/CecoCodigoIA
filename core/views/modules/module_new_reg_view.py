@@ -32,30 +32,14 @@ def module_new_reg_view(request, module_id: str):
     """
 
     # =========================
-    # Usuario autenticado
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("accounts:login")
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    company = getattr(request, "company_ctx", None)
-    if not company:
-        raise Http404("Empresa no disponible en el contexto")
-
-    # =========================
-    # Relación usuario-empresa
-    # =========================
-    user_company = UserCompany.objects.filter(
-        user=user,
-        company=company,
-        is_active=True
-    ).first()
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
 
     # =========================
     # Obtener módulo (Mongo)
@@ -180,9 +164,6 @@ def module_new_reg_view(request, module_id: str):
                     "module": module,
                     "empresa": company,
                     "moduloId": module['_id'],
-                    "user": user,
-                    "company": company,
-                    "user_role": user_company.role_slug if user_company else "user",
                 })
 
         else:
@@ -212,9 +193,6 @@ def module_new_reg_view(request, module_id: str):
                 "module": module,
                 "empresa": company,
                 "moduloId": module['_id'],
-                "user": user,
-                "company": company,
-                "user_role": user_company.role_slug if user_company else "user",
             })
 
     # =========================
@@ -248,9 +226,6 @@ def module_new_reg_view(request, module_id: str):
         "module": module,
         "empresa": company,
         "moduloId": module['_id'],
-        "user": user,
-        "company": company,
-        "user_role": user_company.role_slug if user_company else "user",
     })
     
  
