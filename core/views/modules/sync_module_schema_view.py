@@ -41,28 +41,14 @@ def sync_module_schema_view(request, module_id: str):
     """
 
     # =========================
-    # Usuario autenticado
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("accounts:login")
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    # =========================
-    # Empresa activa
-    # =========================
-    company = getattr(request, "company_ctx", None)
-
-    if not company:
-        return JsonResponse(
-            {"success": False, "error": "Empresa no activa"},
-            status=400,
-        )
+    if not user or not company or not user_company:
+        return JsonResponse({"error": "unauthorized"}, status=401)
 
     try:
         # =========================
@@ -74,7 +60,7 @@ def sync_module_schema_view(request, module_id: str):
         )
 
         if not module:
-            raise Http404("Módulo no encontrado")
+            return JsonResponse({"error": "Módulo no encontrado"}, status=404)
 
         # =========================
         # 2. Obtener modelos del módulo

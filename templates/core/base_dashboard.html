@@ -159,6 +159,12 @@
     <!-- jsPDF -->
     <script src="{% static 'shared/vendor/jspdf/jspdf.umd.min.js' %}"></script>
 
+    <!-- JsBarcode -->
+    <script src="{% static 'shared/vendor/jsbarcode/JsBarcode.all.min.js' %}"></script>
+
+    <!-- canvg -->
+    <script src="{% static 'shared/vendor/canvg/canvg.min.js' %}"></script>
+
 
     <!-- ========================= -->
     <!-- DataTables JS -->
@@ -197,9 +203,9 @@
     <script>
         window.APP = {
             user: {
-                firstName: "{{ user.first_name|escapejs }}",
-                lastName: "{{ user.last_name|escapejs }}",
-                role: "{{ user_role|escapejs }}"
+                firstName: "{{ current_user.first_name|default:''|escapejs }}",
+                lastName: "{{ current_user.last_name|default:''|escapejs }}",
+                role: "{{ current_user_company.role_slug|default:''|escapejs }}"
             }
         };
     </script>

@@ -27,6 +27,8 @@ from core.services.modules.delete_module_record_service import DeleteModuleRecor
 
 from core.services.ui.message_service import set_view_msg, pop_view_msg
 
+from core.db.mongo.services.pdf_templates.pdf_template_query_service import (PDFTemplateQueryService,)
+
 
 def module_view_reg_view(request, module_id: str, id: int):
     """
@@ -35,30 +37,14 @@ def module_view_reg_view(request, module_id: str, id: int):
     """
 
     # =========================
-    # Usuario autenticado
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("accounts:login")
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    company = getattr(request, "company_ctx", None)
-    if not company:
-        raise Http404("Empresa no disponible en el contexto")
-    
-    # =========================
-    # Relación usuario-empresa
-    # =========================
-    user_company = UserCompany.objects.filter(
-        user=user,
-        company=request.company_ctx,
-        is_active=True
-    ).first()
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
 
     # =========================
     # Modo de la vista (VIEW / EDIT)
@@ -286,6 +272,15 @@ def module_view_reg_view(request, module_id: str, id: int):
             "forms": forms
         })
 
+    # =========================
+    # Obtener plantillas PDF
+    # =========================
+    pdf_templates = []
+    if is_view:
+        pdf_templates = PDFTemplateQueryService.get_pdf_templates_by_module(
+            company=company,
+            module_id=module_id,
+        )
 
     # =========================
     # Obtener mensaje flash
@@ -299,12 +294,10 @@ def module_view_reg_view(request, module_id: str, id: int):
         "moduloId": module["_id"],
         "module": module,
         "id": id,
-        "user": user,
-        "company": company,
-        "user_role": user_company.role_slug if user_company else "user",
         "view_msg": view_msg,
         "is_view": is_view,
         "is_edit": is_edit,
+        "pdf_templates": pdf_templates,
     })
 
 
@@ -312,19 +305,15 @@ def module_delete_reg_view(request, module_id: str, id: int):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
 
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return JsonResponse({"success": False, "error": "No autenticado"}, status=401)
+    # =========================
+    # Usuario, empresa y relación usuario-empresa del contexto
+    # =========================
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return JsonResponse({"success": False, "error": "Sesión inválida"}, status=401)
-
-    company = getattr(request, "company_ctx", None)
-    if not company:
-        return JsonResponse({"success": False, "error": "Empresa no disponible"}, status=400)
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
 
     success, error = DeleteModuleRecordService.execute(
         company=company,

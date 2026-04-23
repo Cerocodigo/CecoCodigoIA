@@ -21,31 +21,15 @@ def reports_main_view(request, report_id: str):
     /reports/<report_id>/main/
     """
 
-    # =========================
-    # Usuario autenticado
-    # =========================
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return redirect("accounts:login")
+	# =========================
+	# Usuario, empresa y relación usuario-empresa del contexto
+	# =========================
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    company = getattr(request, "company_ctx", None)
-    if not company:
-        raise Http404("Empresa no disponible en el contexto")
-
-    # =========================
-    # Relación usuario-empresa
-    # =========================
-    user_company = UserCompany.objects.filter(
-        user=user,
-        company=company,
-        is_active=True
-    ).first()
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
 
     # =========================
     # Obtener reporte (Mongo)
@@ -62,9 +46,6 @@ def reports_main_view(request, report_id: str):
     # Contexto
     # =========================
     context = {
-        "user": user,
-        "company": company,
-        "user_role": user_company.role_slug if user_company else "user",
         "report": report,
     }
 

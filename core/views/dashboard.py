@@ -8,21 +8,20 @@ from core.db.sqlite.services.company_join_request_query_service import (CompanyJ
 
 from core.db.mongo.services.modules.module_query_service import ModuleQueryService
 
+from django.http import Http404
+
 
 def dashboard_view(request):
     # =========================
-    # Usuario autenticado (SQLite)
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    user_id = request.session.get("user_id")
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    if not user_id:
-        return redirect("accounts:login")
+    if not user or not company or not user_company:
+        raise Http404("Contexto inválido")
 
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
 
     # =========================
     # Solicitudes pendientes
@@ -32,27 +31,17 @@ def dashboard_view(request):
     # =========================
     # Módulos activos (MongoDB)
     # =========================
-    modulos = ModuleQueryService.get_active_modules(request.company_ctx)
+    modulos = ModuleQueryService.get_active_modules(company)
 
-    # =========================
-    # Relación usuario-empresa
-    # =========================
-    user_company = UserCompany.objects.filter(
-        user=user,
-        company=request.company_ctx,
-        is_active=True
-    ).first()
+
 
 
     # =========================
     # Renderizar dashboard    
     # =========================
     context = {
-        "user": user,
-        "company": request.company_ctx,
         "modulos": modulos,
         "pending_join_requests": pending_join_requests,
-        "user_role": user_company.role_slug if user_company else "user"
     }
 
     return render(request, "core/dashboard.html", context)

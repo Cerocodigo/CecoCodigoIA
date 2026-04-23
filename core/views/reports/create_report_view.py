@@ -8,6 +8,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.http import Http404
 
 from core.services.reports.report_ai_service import (
     ReportAIService,
@@ -34,15 +35,14 @@ def create_report_view(request):
     """
 
     # =========================
-    # Empresa activa
+    # Usuario, empresa y relación usuario-empresa del contexto
     # =========================
-    company = getattr(request, "company_ctx", None)
+    user = request.user_ctx
+    company = request.company_ctx
+    user_company = request.user_company_ctx
 
-    if not company:
-        return JsonResponse(
-            {"error": "Empresa no encontrada en el contexto"},
-            status=400
-        )
+    if not user or not company or not user_company:
+        return JsonResponse({"error": "unauthorized"}, status=401)
 
     # =========================
     # Parseo JSON
