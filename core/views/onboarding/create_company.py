@@ -17,7 +17,8 @@ from core.db.mysql.services.provision_company_database import MySQLProvisionServ
 from core.services.company_logo_service import CompanyLogoService
 from core.services.company_storage_service import CompanyStorageService
 from core.services.company_validation_service import CompanyValidationService
-from core.services.sri_ruc_service import SriRucService
+
+from django_countries import countries
 
 
 def create_company_view(request):
@@ -28,25 +29,24 @@ def create_company_view(request):
     - Usuario autenticado
     - Usuario SIN empresa activa
     """
+    # =========================
+    # Usuario
+    # =========================
+    user = request.user_ctx
 
     # =========================
-    # Usuario autenticado
+    # LIMPIAR empresa activa (clave)
     # =========================
-    user_id = request.session.get("user_id")
-
-    if not user_id:
-        request.session.flush()
-        return redirect("accounts:login")
-
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
+    request.session.pop("company_id", None)
 
     # Si ya tiene empresa activa → dashboard
-    if UserCompany.objects.filter(user=user, is_active=True).exists():
+    if UserCompany.objects.filter(user=user, is_active=True, role_slug="owner").exists():
         return redirect("core:dashboard")
+    
+    context = {
+        "user": user,
+        "countries": countries
+    }
 
     # =========================
     # POST
@@ -56,35 +56,8 @@ def create_company_view(request):
         # =========================
         # Datos generales
         # =========================
-        erp_ruc = request.POST.get("erp_Ruc", "").strip()
-        erp_razon_social = request.POST.get("erp_RazonSocial", "").strip()
         erp_nombre_comercial = request.POST.get("erp_NombreComercial", "").strip()
-        erp_direccion = request.POST.get("erp_Direccion", "").strip()
-
-        # =========================
-        # Datos tributarios
-        # =========================
-        erp_es_contribuyente = request.POST.get(
-            "erp_EsContribuyenteEspecial", "0"
-        )
-
-        erp_numero_contribuyente = "0"
-        if erp_es_contribuyente == "1":
-            erp_numero_contribuyente = request.POST.get(
-                "erp_NumeroContribuyenteEspecial", "0"
-            ).strip()
-
-        erp_obligado = request.POST.get(
-            "erp_ObligadoContabilidad", "NO"
-        )
-
-        erp_regimen = request.POST.get(
-            "erp_Regimen", "No"
-        )
-
-        erp_agente_retencion = request.POST.get(
-            "erp_AgenteRetencion", "No"
-        )
+        erp_pais = request.POST.get("erp_Pais", "EC").strip()
 
         erp_confirmacion = request.POST.get("erp_Confirmacion")
 
@@ -99,14 +72,12 @@ def create_company_view(request):
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
             )
 
         if not all([
-            erp_ruc,
-            erp_razon_social,
             erp_nombre_comercial,
-            erp_direccion,
+            erp_pais,
         ]):
             messages.error(
                 request,
@@ -115,21 +86,29 @@ def create_company_view(request):
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
+            )
+        
+        valid_country_codes = {code for code, _ in countries}
+        if erp_pais not in valid_country_codes:
+            messages.error(request, "País inválido")
+            return render(
+                request,
+                "core/onboarding/create_company.html",
+                context
             )
 
         # =========================
         # Validaciones de negocio
         # =========================
         try:
-            CompanyValidationService.validate_ruc_not_exists(erp_ruc)
-            SriRucService.validate_ruc(erp_ruc)
+            CompanyValidationService.validate_nombre_comercial_not_exists(erp_nombre_comercial)
         except ValidationError as e:
             messages.error(request, e.message)
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
             )
 
         # =========================
@@ -152,7 +131,7 @@ def create_company_view(request):
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
             )
 
         # =========================
@@ -165,15 +144,8 @@ def create_company_view(request):
                 # Crear empresa
                 # =========================
                 company = Company.objects.create(
-                    ruc=erp_ruc,
-                    razon_social=erp_razon_social,
                     nombre_comercial=erp_nombre_comercial,
-                    direccion=erp_direccion,
-
-                    contribuyente=erp_numero_contribuyente,
-                    obligado=erp_obligado,
-                    regimen=erp_regimen,
-                    agente_retencion=erp_agente_retencion,
+                    pais=erp_pais,
 
                     mongo_server=mongo_server,
                     mongo_db_name="",
@@ -246,7 +218,7 @@ def create_company_view(request):
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
             )
 
         except Exception:
@@ -257,7 +229,7 @@ def create_company_view(request):
             return render(
                 request,
                 "core/onboarding/create_company.html",
-                {"user": user}
+                context
             )
 
         messages.success(request, "Empresa creada correctamente")
@@ -269,7 +241,5 @@ def create_company_view(request):
     return render(
         request,
         "core/onboarding/create_company.html",
-        {
-            "user": user,
-        }
+        context
     )

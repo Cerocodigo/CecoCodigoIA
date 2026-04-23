@@ -69,6 +69,7 @@ class AuthRequiredMiddleware:
             "/select-company/",
             "/create-company/",
             "/join/",
+            "/set-company/",
         ]
 
         # =========================

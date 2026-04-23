@@ -10,13 +10,13 @@ class CompanyValidationService:
     NO accede a request / response.
     Lanza ValidationError si algo no cumple reglas.
     """
-
+        
     @staticmethod
-    def validate_ruc_not_exists(ruc: str) -> None:
+    def validate_nombre_comercial_not_exists(nombre_comercial: str) -> None:
         """
-        Valida que el RUC no exista ya en la base SQLite.
+        Valida que el nombre comercial no exista ya en la base SQLite.
         """
-        if Company.objects.filter(ruc=ruc).exists():
+        if Company.objects.filter(nombre_comercial__iexact=nombre_comercial).exists():
             raise ValidationError(
-                "Ya existe una empresa registrada con este RUC"
+                "Ya existe una empresa registrada con este nombre comercial"
             )

@@ -35,9 +35,30 @@ class MySQLProvisionService:
     # =========================
 
     @staticmethod
-    def _generate_password(length: int = 32) -> str:
-        alphabet = string.ascii_letters + string.digits
-        return "".join(secrets.choice(alphabet) for _ in range(length))
+    def _generate_password(length: int = 16) -> str:
+        if length < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
+
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        special = "!@#$%^&*-_=+"
+        # Garantizar al menos uno de cada tipo
+        password = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(special),
+        ]
+
+        # Completar con mezcla total
+        all_chars = lowercase + uppercase + digits + special
+        password += [secrets.choice(all_chars) for _ in range(length - 4)]
+
+        # Mezclar para evitar patrones
+        secrets.SystemRandom().shuffle(password)
+
+        return "".join(password)
 
     # =========================
     # API pública

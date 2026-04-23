@@ -40,4 +40,4 @@ class CompanyJoinRequest(models.Model):
         unique_together = ("user", "company")
 
     def __str__(self):
-        return f"{self.user.email} → {self.company.razon_social} (pendiente)"
+        return f"{self.user.email} → {self.company.nombre_comercial} (pendiente)"

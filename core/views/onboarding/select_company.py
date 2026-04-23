@@ -22,16 +22,12 @@ def select_company_view(request):
     # =========================
     # Usuario autenticado
     # =========================
-    user_id = request.session.get("user_id")
+    user = request.user_ctx
 
-    if not user_id:
-        return redirect("accounts:login")
-
-    try:
-        user = User.objects.get(id=user_id, is_active=True)
-    except User.DoesNotExist:
-        request.session.flush()
-        return redirect("accounts:login")
+    # =========================
+    # LIMPIAR empresa activa (clave)
+    # =========================
+    request.session.pop("company_id", None)
 
 
     # =========================
@@ -87,8 +83,7 @@ def select_company_view(request):
         company = uc.company
         companies.append({
             "id": company.id,
-            "name": company.nombre_comercial or company.razon_social,
-            "description": company.razon_social,
+            "name": company.nombre_comercial,
             "logo_url": company.logo_url,
             "role": uc.role_slug,
             "is_owner": uc.is_owner,

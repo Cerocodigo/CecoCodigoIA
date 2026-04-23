@@ -10,6 +10,8 @@ from core.db.sqlite.models.company_join_request import CompanyJoinRequest
 from core.db.sqlite.models.mongo_server import MongoServer
 from core.db.sqlite.models.mysql_server import MySQLServer
 from core.db.sqlite.models.password_reset_token import PasswordResetToken
+from core.db.sqlite.models.modelo_prehecho import ModeloPrehecho
+from core.db.sqlite.models.modelo_prehecho_jsons import ModeloPrehechoJsons
 
 
 # =========================
@@ -35,14 +37,13 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
-        "razon_social",
-        "ruc",
         "nombre_comercial",
+        "pais",
         "is_active",
         "created_at",
     )
-    search_fields = ("razon_social", "ruc", "nombre_comercial")
-    list_filter = ("is_active",)
+    search_fields = ("nombre_comercial", "pais")
+    list_filter = ("is_active", "pais")
     ordering = ("-created_at",)
 
 
@@ -59,7 +60,7 @@ class UserCompanyAdmin(admin.ModelAdmin):
         "joined_at",
     )
     list_filter = ("is_owner", "is_active")
-    search_fields = ("user__email", "company__razon_social")
+    search_fields = ("user__email", "company__nombre_comercial")
     ordering = ("-joined_at",)
 
 
@@ -86,7 +87,7 @@ class CompanyInvitationAdmin(admin.ModelAdmin):
     search_fields = (
         "token",
         "email",
-        "company__razon_social",
+        "company__nombre_comercial",
     )
     ordering = ("-created_at",)
     readonly_fields = ("token", "created_at")
@@ -107,7 +108,7 @@ class CompanyJoinRequestAdmin(admin.ModelAdmin):
     list_filter = ("is_approved",)
     search_fields = (
         "user__email",
-        "company__razon_social",
+        "company__nombre_comercial",
     )
     ordering = ("-created_at",)
 
@@ -157,4 +158,40 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
     )
     list_filter = ("used",)
     search_fields = ("user__email", "token")
+    ordering = ("-created_at",)
+
+
+# =========================
+# Modelo Prehecho
+# =========================
+@admin.register(ModeloPrehecho)
+class ModeloPrehechoAdmin(admin.ModelAdmin):
+    list_display = (
+        "nombre",
+        "descripcion",
+        "categoria",
+        "activo",
+        "icono",
+        "created_at",
+        "actualizado_en",
+    )
+    search_fields = ("nombre",)
+    ordering = ("-created_at",)
+
+# =========================
+# Modelo Prehecho Jsons
+# =========================
+@admin.register(ModeloPrehechoJsons)
+class ModeloPrehechoJsonsAdmin(admin.ModelAdmin):
+    list_display = (
+        "modelo",
+        "descripcion",
+        "tipo",
+        "json",
+        "prompt_config",
+        "activo",
+        "created_at",
+    )
+    list_filter = ("tipo", "activo")
+    search_fields = ("modelo__nombre", "descripcion")
     ordering = ("-created_at",)

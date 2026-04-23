@@ -3,6 +3,8 @@ from django.db import models
 from core.db.sqlite.models.mongo_server import MongoServer
 from core.db.sqlite.models.mysql_server import MySQLServer
 
+from django_countries import countries
+
 
 class Company(models.Model):
     """
@@ -12,18 +14,12 @@ class Company(models.Model):
     # =========================
     # Datos generales
     # =========================
-    ruc = models.CharField(max_length=20, unique=True)
-    razon_social = models.CharField(max_length=255)
     nombre_comercial = models.CharField(max_length=255)
-    direccion = models.TextField()
-
-    # =========================
-    # Datos tributarios
-    # =========================
-    contribuyente = models.CharField(max_length=10, default="0")
-    obligado = models.CharField(max_length=10, default="NO")
-    regimen = models.CharField(max_length=50, default="No")
-    agente_retencion = models.CharField(max_length=10, default="No")
+    pais = models.CharField(
+        max_length=2,
+        choices=list(countries),
+        default='EC'
+    )
 
     # =========================
     # Conexiones MongoDB
@@ -64,4 +60,4 @@ class Company(models.Model):
         db_table = "companies"
 
     def __str__(self):
-        return self.razon_social
+        return self.nombre_comercial
