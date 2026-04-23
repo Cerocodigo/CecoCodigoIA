@@ -37,7 +37,7 @@ def join_company(request, token: str):
     messages.success(
         request,
         f"Te has unido correctamente a la empresa "
-        f"{result['company'].razon_social}"
+        f"{result['company'].nombre_comercial}"
     )
 
     return redirect("core:onboarding:select_company")

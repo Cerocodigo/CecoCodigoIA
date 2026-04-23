@@ -54,10 +54,12 @@
                                         {% endif %}
 
 
-                                        <a href="{% url 'core:dashboard' %}"
-                                           class="btn btn-sm btn-primary mt-auto">
-                                            Entrar
-                                        </a>
+                                        <form method="post" action="{% url 'core:set_active_company' company.id %}" class="mt-auto">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-block w-100">
+                                                Entrar
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -97,11 +99,14 @@
                                        id="company_token"
                                        name="company_token"
                                        placeholder="Ej: ABCD-1234"
-                                       required>
+                                       required disabled>
+                                <small class="form-text text-muted">
+                                    Caracteristica aún no disponible.
+                                </small>
                             </div>
 
                             <button type="submit"
-                                    class="btn btn-secondary btn-block">
+                                    class="btn btn-secondary btn-block" disabled>
                                 Unirme
                             </button>
                         </form>

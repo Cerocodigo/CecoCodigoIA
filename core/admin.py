@@ -37,14 +37,13 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
-        "razon_social",
-        "ruc",
         "nombre_comercial",
+        "pais",
         "is_active",
         "created_at",
     )
-    search_fields = ("razon_social", "ruc", "nombre_comercial")
-    list_filter = ("is_active",)
+    search_fields = ("nombre_comercial", "pais")
+    list_filter = ("is_active", "pais")
     ordering = ("-created_at",)
 
 
@@ -61,7 +60,7 @@ class UserCompanyAdmin(admin.ModelAdmin):
         "joined_at",
     )
     list_filter = ("is_owner", "is_active")
-    search_fields = ("user__email", "company__razon_social")
+    search_fields = ("user__email", "company__nombre_comercial")
     ordering = ("-joined_at",)
 
 
@@ -88,7 +87,7 @@ class CompanyInvitationAdmin(admin.ModelAdmin):
     search_fields = (
         "token",
         "email",
-        "company__razon_social",
+        "company__nombre_comercial",
     )
     ordering = ("-created_at",)
     readonly_fields = ("token", "created_at")
@@ -109,7 +108,7 @@ class CompanyJoinRequestAdmin(admin.ModelAdmin):
     list_filter = ("is_approved",)
     search_fields = (
         "user__email",
-        "company__razon_social",
+        "company__nombre_comercial",
     )
     ordering = ("-created_at",)
 

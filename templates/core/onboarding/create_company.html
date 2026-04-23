@@ -44,90 +44,27 @@
                         Datos generales
                     </h6>
                 </div>
-
                 <div class="card-body">
-                    <div class="form-group">
-                        <label>RUC</label>
-                        <input type="text" class="form-control" name="erp_Ruc" placeholder="RUC" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Razón social</label>
-                        <input type="text" class="form-control" name="erp_RazonSocial" placeholder="Razón social"
-                            required>
-                    </div>
-
                     <div class="form-group">
                         <label>Nombre comercial</label>
                         <input type="text" class="form-control" name="erp_NombreComercial"
                             placeholder="Nombre comercial" required>
                     </div>
-
+                    
                     <div class="form-group">
-                        <label>Dirección</label>
-                        <input type="text" class="form-control" name="erp_Direccion" placeholder="Dirección" required>
+                        <label>País</label>
+                        <select class="form-control" name="erp_Pais" required>
+                            {% for code, name in countries %}
+                                <option value="{{ code }}" {% if code == "EC" %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
+
                 </div>
             </div>
 
-            <!-- ========================= -->
-            <!-- CARD: Información tributaria -->
-            <!-- ========================= -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-secondary">
-                        Información tributaria
-                    </h6>
-                </div>
-
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Es contribuyente especial</label>
-                        <select class="form-control" name="erp_EsContribuyenteEspecial"
-                            id="erp_EsContribuyenteEspecial">
-                            <option value="0">No</option>
-                            <option value="1">Sí</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Número de Contribuyente Especial</label>
-                        <input type="text" class="form-control" name="erp_NumeroContribuyenteEspecial"
-                            id="erp_NumeroContribuyenteEspecial" value="0" disabled>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Obligado a llevar contabilidad</label>
-                        <select class="form-control" name="erp_ObligadoContabilidad">
-                            <option value="NO">No</option>
-                            <option value="SI">Sí</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Régimen</label>
-                        <select class="form-control" name="erp_Regimen">
-                            <option value="No">Otros</option>
-                            <option value="Persona Natural">Persona Natural</option>
-                            <option value="General">General</option>
-                            <option value="CONTRIBUYENTE RÉGIMEN MICROEMPRESAS">
-                                Contribuyente Régimen Microempresas
-                            </option>
-                            <option value="CONTRIBUYENTE RÉGIMEN RIMPE">
-                                Contribuyente Régimen RIMPE
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Agente de retención</label>
-                        <select class="form-control" name="erp_AgenteRetencion">
-                            <option value="No">No</option>
-                            <option value="1">Sí</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
 
             <!-- ========================= -->
             <!-- CARD: Archivos -->

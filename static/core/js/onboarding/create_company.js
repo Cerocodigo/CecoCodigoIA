@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const form = document.querySelector('form');
 
-    const selectContribuyente = document.getElementById('erp_EsContribuyenteEspecial');
-    const inputNumeroContribuyente = document.getElementById('erp_NumeroContribuyenteEspecial');
     const checkboxConfirmacion = document.getElementById('confirmacion');
     const jsMessages = document.getElementById('create-company-messages');
 
@@ -47,24 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    // =========================
-    // Toggle contribuyente especial
-    // =========================
-    function toggleContribuyenteEspecial() {
-        if (selectContribuyente.value === '1') {
-            inputNumeroContribuyente.disabled = false;
-            inputNumeroContribuyente.required = true;
-        } else {
-            inputNumeroContribuyente.disabled = true;
-            inputNumeroContribuyente.required = false;
-            inputNumeroContribuyente.value = '';
-        }
-    }
-
-    selectContribuyente.addEventListener('change', toggleContribuyenteEspecial);
-
-    // Ejecutar al cargar por si hay valores previos
-    toggleContribuyenteEspecial();
 
     // =========================
     // Validación antes del submit
@@ -74,29 +54,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const errors = [];
 
-        // Campos obligatorios (manual, explícito)
         const requiredFields = [
-            { name: 'erp_Ruc', label: 'RUC' },
-            { name: 'erp_RazonSocial', label: 'Razón social' },
             { name: 'erp_NombreComercial', label: 'Nombre comercial' },
-            { name: 'erp_Direccion', label: 'Dirección' }
+            { name: 'erp_Pais', label: 'País' }
         ];
 
         requiredFields.forEach(field => {
             const input = form.querySelector(`[name="${field.name}"]`);
-            if (!input || input.value.trim() === '') {
+            if (!input || !input.value || input.value.trim() === '') {
                 errors.push(`El campo "${field.label}" es obligatorio.`);
             }
         });
 
-        // Validación contribuyente especial
-        if (selectContribuyente.value === '1') {
-            if (inputNumeroContribuyente.value.trim() === '') {
-                errors.push(
-                    'Debes ingresar el número de Contribuyente Especial.'
-                );
-            }
-        }
 
         // Confirmación
         if (!checkboxConfirmacion.checked) {
