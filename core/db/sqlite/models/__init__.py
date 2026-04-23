@@ -6,3 +6,5 @@ from .mongo_server import MongoServer
 from .mysql_server import MySQLServer
 from .company_join_request import CompanyJoinRequest
 from .password_reset_token import PasswordResetToken
+from .modelo_prehecho import ModeloPrehecho
+from .modelo_prehecho_jsons import ModeloPrehechoJsons
