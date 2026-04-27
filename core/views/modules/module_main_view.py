@@ -81,14 +81,47 @@ def module_main_view(request, module_id: str):
     # =========================
     ensure_result = EnsureModelSchemaService.ensure_model_schema(
         company=company,
-        model=models[0],
+        models=models,
     )
 
     # =========================
-    # Si la sincronización falla, se muestra un mensaje de error pero se intenta cargar la vista con los datos disponibles (si los hay).
+    # Si alguna sincronización falla, mostrar mensaje de error
+    # pero intentar cargar la vista con los datos disponibles
     # =========================
     if not ensure_result["success"]:
-        set_view_msg(request, "error", "Error sincronizando esquema MySQL del modelo principal. Detalles: " + ensure_result.get("error", "Desconocido") + ". Se intentará cargar los datos, pero podrían no mostrarse correctamente.")
+
+        failed_models = [
+            item
+            for item in ensure_result.get("results", [])
+            if not item.get("success", False)
+        ]
+
+        error_details = []
+
+        for item in failed_models:
+            table_name = item.get("table", "sin_tabla")
+            errors = item.get("errors", [])
+
+            if errors:
+                safe_errors = [str(error) for error in errors]
+
+                error_details.append(
+                    f"{table_name}: {', '.join(safe_errors)}"
+                )
+            else:
+                error_details.append(
+                    f"{table_name}: error desconocido"
+                )
+
+        set_view_msg(
+            request,
+            "error",
+            "Error sincronizando algunos modelos del módulo. "
+            + "Detalles: "
+            + " | ".join(error_details)
+            + ". Se intentará cargar los datos, pero podrían no mostrarse correctamente."
+        )
+
         return render(
             request,
             "core/modules/module_main.html",
