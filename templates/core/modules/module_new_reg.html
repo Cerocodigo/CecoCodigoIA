@@ -101,7 +101,7 @@
                             {% with a=field.field.widget.attrs %}
                             {% if a.data_area == "Main-Arriba" %}
 
-                            {% if a.data_break == "1" %}
+                            {% if a.data_break == True %}
                             <div class="w-100"></div>
                             {% endif %}
 
@@ -184,7 +184,7 @@
                             {% with a=field.field.widget.attrs %}
                             {% if a.data_area == "Side-Arriba" %}
 
-                            {% if a.data_break == "1" %}
+                            {% if a.data_break == True %}
                             <div class="w-100"></div>
                             {% endif %}
 
@@ -375,7 +375,7 @@
                             {% with a=field.field.widget.attrs %}
                             {% if a.data_area == "Main-Abajo" %}
 
-                            {% if a.data_break == "1" %}
+                            {% if a.data_break == True %}
                             <div class="w-100"></div>
                             {% endif %}
 
@@ -457,7 +457,7 @@
                             {% with a=field.field.widget.attrs %}
                             {% if a.data_area == "Side-Abajo" %}
 
-                            {% if a.data_break == "1" %}
+                            {% if a.data_break == True %}
                             <div class="w-100"></div>
                             {% endif %}
 

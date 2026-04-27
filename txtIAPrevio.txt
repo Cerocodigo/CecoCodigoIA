@@ -1,219 +1,38 @@
-PRINCIPIOS GENERALES
 
-El sistema Cerocodigo se define completamente mediante JSON. No existe lógica fuera del JSON. Todo comportamiento (base de datos, reglas, cálculos, relaciones y UI) debe declararse dentro de los modelos y módulos. No se permite agregar campos fuera de la estructura definida. Ningún valor puede ser null.
 
-INFORMACIÓN NECESARIA PARA CREAR UN MÓDULO
 
-Nombre del proceso (ej: ventas, gastos, inventario)
-Tipo de proceso:
-Tiene cabecera (sí/no)
-Tiene detalles (sí/no, cuántos y cuáles)
-Entidades involucradas:
-Maestros (catálogos independientes)
-Cabecera (registro principal)
-Detalles (listas dependientes)
-Campos de cada entidad:
-Nombre
-Tipo de dato
-Si es requerido
-Si es único
-Relaciones:
-Qué entidad se relaciona con cuál
-Lógica:
-Cálculos
-Condiciones
-Valores automáticos
-Validaciones:
-Obligatorios
-Rangos
-Unicidad
-Comportamiento automático:
-Fechas
-Secuencias
-Usuario
-Prioridad del módulo:
-alto, medio o bajo
+modulos: son los procesos y objetos del negocio. 
+Ejemplo:
+[
+    {
+        "_id": "clientes", // Identificador único del módulo (clave interna, no debe repetirse)
+        "nombre": "Clientes", // Nombre visible del módulo en la interfaz
+        "descripcion": "Lista de clientes de empresa", // Explicación funcional de lo que hace el módulo 
+        "uso": "alto", // Nivel de uso esperado (puede servir para priorizar UI, rendimiento o análisis)
+        "activo": true, // Indica si el módulo está habilitado o disponible en el sistema
+        "entidades": [
+            "Clientes" // Lista de entidades/tablas/modelos que pertenecen a este módulo
+        ], // Listado de las tablas vinculadas al modulo
+        "creado_en": {
+            "$date": "2026-02-11T19:41:39.998Z" // Fecha de creación del módulo en formato ISO (útil para auditoría)
+        },
+        "prompt_config":"Proposito":"Mantener el listado de clientes, para ser usado por otros modulos"
+    }
+]
 
-NORMAS PARA CREAR MÓDULOS
-
-El campo _id debe ser un slug válido en minúsculas sin espacios.
-nombre debe coincidir semánticamente con _id.
-uso solo puede ser: alto, medio o bajo.
-activo debe ser boolean.
-descripcion debe describir el módulo.
-entidades debe contener los _id de los modelos asociados.
-creado_en debe tener formato fecha válido.
-prompt_config.enabled debe ser true.
-prompt_config debe existir siempre.
-El módulo representa un proceso completo, no mezclar procesos distintos.
-
-NORMAS PARA CREAR MODELOS
-
-_id debe ser slug válido.
-activo debe ser boolean.
-tabla debe ser el nombre físico en base de datos.
-display debe existir como campo dentro de campos.
-rol debe ser uno de: maestro, cabecera, detalle.
-pk es obligatorio y debe existir como campo.
-fk es obligatorio en modelos tipo detalle.
-modulo debe existir y coincidir con un módulo válido.
-campos debe ser un array con todos los campos definidos.
-Cada modelo representa una sola responsabilidad.
-
-NORMAS PARA CAMPOS
-
-Todos los campos deben incluir:
-visible
-nombre
-etiqueta
-tipo_base
-tipo_funcional
-requerido
-configuracion
-orden
-col
-area
-valor_default
-placeholder
-ayuda
-nombre debe ser único dentro del modelo y en formato PascalCase.
-etiqueta es el texto visible para el usuario.
-tipo_base debe pertenecer a SQL_TYPES definidos.
-tipo_funcional debe pertenecer a Cecod_TYPES.
-requerido debe ser true o false.
-configuracion debe existir siempre, aunque sea vacío.
-orden debe ser un número entre 0 y 100.
-col debe ser un número entre 1 y 12.
-area debe ser main o side.
-valor_default no puede ser null.
-placeholder es opcional pero debe existir.
-ayuda es opcional pero debe existir.
-
-NORMAS DE VALORES DEFAULT
-
-string = ""
-decimal = 0
-int = 0
-boolean = 0 o false
-nunca usar null
-
-NORMAS DE ROLES
-
-maestro: catálogo independiente sin fk
-cabecera: entidad principal de un proceso
-detalle: entidad dependiente con fk obligatoria
-
-NORMAS DE RELACIONES
-
-Toda relación debe tener:
-campo tipo fk
-tipo_funcional Referencia o ReferenciaBuscador
-configuracion con SQL válido
-FK debe ser requerido en detalles.
-ReferenciaBuscador se usa en cabecera.
-Referencia se usa en detalles.
-
-NORMAS DE TIPO_FUNCIONAL
-
-Todo campo debe tener tipo_funcional válido.
-NumeroSecuencial solo se usa en pk.
-TextoSimple debe definir unico, editable y valor_predeterminado.
-NumeroSimple debe definir decimales, min y max.
-SistemaFecha no lleva configuración.
-FechaRegistro debe usarse para auditoría.
-OpcionMultiple debe tener opciones, labels y valor_predeterminado.
-Referencia debe tener sql, value_field, label_field.
-ReferenciaBuscador debe tener sql, value_field y label_field.
-ReferenciaAdjunto depende de otro campo referencia.
-QueryBaseDatos solo debe retornar una columna.
-Operacion solo puede usar campos del mismo registro.
-Condicional debe tener lista de condiciones simples.
-FormulaDetalle debe tener operacion, campo, tabla y condicion.
-Archivo debe definir tipo y tamaño.
-FormatoTexto debe definir template y padding.
-
-NORMAS DE CÁLCULOS
-
-Los cálculos deben dividirse en pasos.
-No se permite cálculo directo complejo.
-Usar campos intermedios.
-Usar FormulaDetalle para agregaciones.
-Usar Operacion para cálculos locales.
-Cada cálculo debe estar en un campo separado.
-
-NORMAS DE UI
-
-area main es para entrada de usuario.
-area side es para resultados.
-col define ancho visual.
-orden define secuencia lógica.
-campos importantes deben tener mayor col.
-
-NORMAS DE VALIDACIÓN
-
-requerido controla obligatoriedad.
-unico se define en configuracion.
-NumeroSimple debe validar min y max.
-No se permiten campos sin validación lógica cuando aplica.
-
-NORMAS DE CONSISTENCIA
-
-Nombres deben coincidir entre:
-modelo
-tabla
-fk
-configuraciones
-No duplicar lógica en múltiples campos.
-Todo campo calculado debe depender de otros campos existentes.
-No usar nombres ambiguos.
-
-NORMAS DE ESCALABILIDAD
-
-Separar entidades aunque parezcan similares.
-Diseñar pensando en reportes.
-No mezclar conceptos en un solo campo.
-Evitar lógica hardcodeada.
-
-ERRORES PROHIBIDOS
-
-valor_default = null
-campos sin configuracion
-tipo_funcional incorrecto
-fk inexistente
-tabla inexistente en FormulaDetalle
-cálculos mezclados en un solo campo
-lógica fuera del JSON
-no separar cabecera y detalle
-uso incorrecto de roles
-UI desordenada
-SQL incorrecto en referencias
-condiciones mal definidas
-campos sin orden o col válido
-
-FLUJO CORRECTO PARA CREAR UN MÓDULO
-
-Definir proceso
-Definir entidades (maestro, cabecera, detalle)
-Definir relaciones
-Definir campos
-Definir lógica (cálculos y reglas)
-Definir validaciones
-Definir comportamiento automático
-Definir UI
-Construir modelos
-Construir módulo
-Validar consistencia
-Validar que no exista lógica fuera del JSON
-
-RESULTADO ESPERADO
-
-El JSON final debe ser:
-
-completo
-consistente
-sin null
-sin lógica externa
-listo para ejecutar sin modificaciones
-escalable
-entendible
-alineado a las reglas definidas arriba
+modelos
+[
+    {
+        "_id": "clientes",  // referencia a modulos._id
+        "activo": true, // Indica si el módulo está habilitado o disponible en el sistema
+        "tabla": "clientes",
+        "display": "Clientes",
+        "rol": "cabecera", // determina
+        "pk": "Secuencial",// Nombre del campo que es pk en "campos"
+    "campos": [
+        {
+        "visible": false,
+      
+  ],
+  "modulo": "clientes"
+}]

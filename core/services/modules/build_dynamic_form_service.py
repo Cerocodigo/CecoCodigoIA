@@ -64,7 +64,7 @@ def build_dynamic_form(campos, company, modelo, es_detalle=False):
         col = campo.get("col", 3)
         gap = campo.get("gap", 0)
         gap_top = campo.get("gap_top", 0)
-        break_line = campo.get("break", 0)
+        break_line = campo.get("break", False)
         area = campo.get("area", "Main-Arriba")
 
         # attrs base
@@ -74,7 +74,7 @@ def build_dynamic_form(campos, company, modelo, es_detalle=False):
             "data_col": col,
             "data_gap": gap,
             "data_gap_top": gap_top,
-            "data_break": "1" if break_line else "0",
+            "data_break": break_line,
             "data_area": area,
             "visible": visible,
             "data_tipo": tipo_funcional,
@@ -181,7 +181,7 @@ def build_dynamic_form(campos, company, modelo, es_detalle=False):
             ref = configuracion.get("referencia")
             campo_origen = configuracion.get("campo_origen")
 
-            if configuracion.get("editable") == "false":
+            if configuracion.get("editable") == "No":
                 widget_attrs["readonly"] = "readonly"
 
             widget_attrs.update({
