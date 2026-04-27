@@ -244,30 +244,7 @@ function renderSegmento(doc, seg, cab, baseY) {
 
         maxY = Math.max(maxY, y);
 
-        // 🔥 GRAFICO RESTAURADO
-        if (e.tipo === "Grafico") {
-
-            let [tipoG, r, g, b] = e.valor.split(",");
-            let [h, w] = e.tamano.split(",");
-
-            doc.setFillColor(r, g, b);
-
-            if (tipoG === "cuadrado") {
-                doc.rect(x, y, w, h, "F");
-            } else {
-                doc.roundedRect(x, y, w, h, 0.3, 0.3, "FD");
-            }
-
-            doc.setFillColor(0, 0, 0);
-        }
-
-        else if (e.tipo === "Logo") {
-            // let img = document.getElementById("logo_cia");
-            // if (img) {
-            //     let base64 = getBase64ImagePdf(img);
-            //     let [w, h] = e.tamano.split(",").map(parseFloat);
-            //     doc.addImage(base64, "PNG", x, y, w, h);
-            // }
+        if (e.tipo === "Logo") {
             const logo = document.getElementById("company-logo");
 
             // ✅ Solo usar si realmente cargó
@@ -291,6 +268,36 @@ function renderSegmento(doc, seg, cab, baseY) {
             doc.text(x, y, e.valor);
         }
     });
+    // ======================================================
+    // GRAFICOS (nuevo esquema separado de etiquetas)
+    // ======================================================
+
+    (seg.grafico || []).forEach(g => {
+
+        let x = parseFloat(g.x);
+        let y = baseY + parseFloat(g.y);
+
+        let ancho = parseFloat(g.ancho || 0);
+        let alto = parseFloat(g.alto || 0);
+
+        maxY = Math.max(maxY, y + alto);
+
+        let [r, gColor, b] = (g.rgb || "0,0,0")
+            .split(",")
+            .map(v => parseFloat(v));
+
+        doc.setFillColor(r, gColor, b);
+
+        if (g.tipo === "cuadrado") {
+            doc.rect(x, y, ancho, alto, "F");
+        }
+        else if (g.tipo === "cuadrado_cir") {
+            doc.roundedRect(x, y, ancho, alto, 0.3, 0.3, "FD");
+        }
+
+        doc.setFillColor(0, 0, 0);
+    });
+
 
     (seg.campos || []).forEach(c => {
 
@@ -324,13 +331,6 @@ function renderSegmento(doc, seg, cab, baseY) {
             doc.addImage(img, "PNG", x, y, w, h);
         }
 
-        // else if (c.tipo === "Derecha") {
-        //     doc.text(x, y, valor, { align: "right" });
-        // }
-
-        // else {
-        //     doc.text(x, y, valor);
-        // }
         else {
             const lines = obtenerLineasTexto(
                 doc,
@@ -365,8 +365,21 @@ function renderSegmento(doc, seg, cab, baseY) {
 
 function estimarAlturaSegmento(seg) {
     let max = 0;
-    (seg.etiquetas || []).forEach(e => max = Math.max(max, parseFloat(e.y)));
-    (seg.campos || []).forEach(c => max = Math.max(max, parseFloat(c.y)));
+
+    (seg.etiquetas || []).forEach(e => {
+        max = Math.max(max, parseFloat(e.y || 0));
+    });
+
+    (seg.grafico || []).forEach(g => {
+        const y = parseFloat(g.y || 0);
+        const alto = parseFloat(g.alto || 0);
+        max = Math.max(max, y + alto);
+    });
+
+    (seg.campos || []).forEach(c => {
+        max = Math.max(max, parseFloat(c.y || 0));
+    });
+
     return max + 0.5;
 }
 
