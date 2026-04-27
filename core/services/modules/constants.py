@@ -66,7 +66,7 @@ FIELD_DEFAULTS = {
     "valor_default": None,
     "placeholder": "",
     "ayuda": "",
-    "break":'0',
+    "break":False,
     "gap":'0',
     "gap_top":'0',
 }
@@ -326,6 +326,8 @@ CECOD_CONFIG_META = {
             "value_field",
             "label_field",
             "campos_filtrables",
+            "valor_inicial",
+            "ModuloIngresoRapido"
         },
         "defaults": None,
     },
