@@ -230,12 +230,12 @@ SQL_TYPE_META = {
     },
 
     "date": {
-        "default": "1970-01-01",
+        "default": "1900-01-01",
         "cast": str,
         "sql": "DATE",
     },
     "datetime": {
-        "default": "1970-01-01 00:00:00",
+        "default": "1900-01-01 00:00:00",
         "cast": str,
         "sql": "DATETIME",
     },

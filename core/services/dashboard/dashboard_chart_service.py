@@ -38,7 +38,7 @@ class DashboardChartService:
             }
 
         # 2. Ordenar
-        charts.sort(key=lambda c: c.get("Orden", 1))
+        charts.sort(key=lambda c: c.get("orden", 1))
 
         # 3. Conexión (UNA sola vez)
         connection = MySQLCompanyConnectionService.get_connection_for_company(
@@ -53,7 +53,8 @@ class DashboardChartService:
         try:
             for chart in charts:
 
-                sql = chart.get("Sql")
+                configuracion = chart.get("configuracion", {})
+                sql = configuracion.get("sql")
 
                 if not sql:
                     valores_charts[chart["id"]] = []
@@ -62,8 +63,9 @@ class DashboardChartService:
                 try:
                     rows = dml.fetch_all(sql)
                     rows = normalize_rows(rows)
-                except Exception as e:
+                except Exception:
                     rows = []
+
                 valores_charts[chart["id"]] = rows
         finally:
             try:
