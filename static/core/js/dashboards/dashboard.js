@@ -47,37 +47,52 @@ function carga_charts(Response) {
   }
 
   charts.forEach(chart => {
-    const tipo = chart.TipoChart;
+    const modelo = (chart.modeloChart || '').toLowerCase();
     const data = valores[chart.id] || [];
 
-    if (tipo === 'Chart JS') {
+    // Chart.js
+    if (['torres', 'barras', 'pastel'].includes(modelo)) {
       renderChartJS(container, chart, data);
+      return;
     }
 
-    if (tipo === 'Echarts') {
+    // Echarts / Gauge visuales
+    if (['gauge', 'gauge2'].includes(modelo)) {
       renderEcharts(container, chart, data);
+      return;
     }
 
-    if (tipo === 'Tabla') {
+    // Tabla
+    if (modelo === 'tabla') {
       renderTabla(container, chart, data);
+      return;
     }
+
+    // Calendario
+    if (modelo === 'calendario') {
+      renderCalendario(container, chart, data);
+      return;
+    }
+
+    console.warn(`Modelo de chart no soportado: ${chart.modeloChart}`);
   });
 }
 
 function renderChartJS(container, chart, data) {
   const div = document.createElement('div');
-  div.className = chart.HtmlClass || 'col-md-6';
+  div.className = chart.htmlClass || 'col-md-6';
 
   const canvasId = 'chart_' + chart.id;
+  const config = chart.configuracion || {};
 
   div.innerHTML = `
     <div class="card shadow mb-4">
       <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">${chart.Titulo}</h6>
+        <h6 class="m-0 font-weight-bold text-primary">${chart.titulo}</h6>
       </div>
       <div class="card-body">
         <div style="height:250px;">
-            <canvas id="${canvasId}"></canvas>
+          <canvas id="${canvasId}"></canvas>
         </div>
       </div>
     </div>
@@ -85,20 +100,21 @@ function renderChartJS(container, chart, data) {
 
   container.appendChild(div);
 
-  const labels = data.map(row => row[chart.DatoX]);
-  const values = data.map(row => parseFloat(row[chart.CampoValor]));
+  const labels = data.map(row => row[config.datoX]);
+  const values = data.map(row => parseFloat(row[config.campoValor]));
 
   let type = 'bar';
+  const modelo = (chart.modeloChart || '').toLowerCase();
 
-  if (chart.ModeloChart === 'Barras') type = 'line';
-  if (chart.ModeloChart === 'Pastel') type = 'pie';
+  if (modelo === 'barras') type = 'line';
+  if (modelo === 'pastel') type = 'pie';
 
   new Chart(document.getElementById(canvasId), {
     type: type,
     data: {
       labels: labels,
       datasets: [{
-        label: chart.Label || chart.Titulo,
+        label: chart.label || chart.titulo,
         data: values,
       }]
     },
@@ -112,30 +128,38 @@ function renderChartJS(container, chart, data) {
 
 function renderEcharts(container, chart, data) {
   const div = document.createElement('div');
-  div.className = chart.HtmlClass || 'col-md-3';
+  div.className = chart.htmlClass || 'col-md-3';
 
   const id = 'chart_' + chart.id;
   div.innerHTML = `<div id="${id}"></div>`;
   container.appendChild(div);
 
   const dom = document.getElementById(id);
+  const config = chart.configuracion || {};
+  const modelo = (chart.modeloChart || '').toLowerCase();
 
   if (!data || !data.length) return;
 
-  if (chart.ModeloChart === 'Gauge') {
+  /*
+  =====================================================
+  GAUGE
+  =====================================================
+  */
+  if (modelo === 'gauge') {
 
-    let lis_valor = chart.DatoX.split(',');
-    let lis_meta = chart.NombreDatoX.split(',');
+    let lis_valor = (config.datoX || '').split(',');
+    let lis_meta = (config.nombreDatoX || '').split(',');
 
-    // Normalización (IMPORTANTE)
+    // Normalización original
     if (lis_valor.length === 1) {
-      lis_valor = [chart.DatoX, chart.DatoX];
-    }
-    if (lis_meta.length === 1) {
-      lis_meta = [chart.NombreDatoX, chart.NombreDatoX];
+      lis_valor = [config.datoX, config.datoX];
     }
 
-    let row = data[0];
+    if (lis_meta.length === 1) {
+      lis_meta = [config.nombreDatoX, config.nombreDatoX];
+    }
+
+    const row = data[0];
 
     let ch_valor = 0;
     let ch_display = 0;
@@ -157,15 +181,17 @@ function renderEcharts(container, chart, data) {
     ch_meta_display = row[lis_meta[1]];
 
     // Base
-    ch_base = row[chart.NombreDatoY];
+    ch_base = row[config.nombreDatoY];
 
-    // Null safety (IGUAL QUE ORIGINAL)
+    // Null safety original
     if (ch_meta == null) {
       ch_meta = 0;
       ch_meta_display = 0;
     }
 
-    if (ch_base == null) ch_base = 0;
+    if (ch_base == null) {
+      ch_base = 0;
+    }
 
     if (ch_valor == null) {
       ch_valor = 0;
@@ -175,7 +201,13 @@ function renderEcharts(container, chart, data) {
     let color = 'green';
     let porcentaje = 0;
 
-    // 🔴 CASO META = 0 (usa base)
+    /*
+    IMPORTANTE:
+    Se mantiene exactamente la lógica original,
+    incluso el comportamiento raro de dividir entre ch_meta = 0
+    porque así estaba implementado.
+    */
+
     if (parseInt(ch_meta) === 0) {
 
       let calc = parseInt(parseFloat(ch_valor / ch_base) * 100);
@@ -184,7 +216,6 @@ function renderEcharts(container, chart, data) {
       if (calc > 33 && calc <= 66) color = 'yellow';
       if (calc > 66) color = 'red';
 
-      // ⚠️ IMPORTANTE: el original usa ch_meta aquí (aunque sea 0)
       porcentaje = parseInt(parseFloat(ch_valor / ch_meta) * 100);
 
     } else {
@@ -203,24 +234,36 @@ function renderEcharts(container, chart, data) {
         <span class="info-box-icon">
           <i class="fa fa-fw fa-tachometer-alt"></i>
         </span>
+
         <div class="info-box-content">
-          <span class="info-box-text">${chart.Titulo}</span>
+          <span class="info-box-text">${chart.titulo}</span>
           <span class="info-box-number">${ch_display}</span>
+
           <div class="progress">
             <div class="progress-bar" style="width: ${porcentaje}%"></div>
           </div>
-          <span class="progress-description">${ch_meta_display}</span>
+
+          <span class="progress-description">
+            ${ch_meta_display}
+          </span>
         </div>
       </div>
     `;
+
+    return;
   }
 
-  if (chart.ModeloChart === 'Gauge2') {
+  /*
+  =====================================================
+  GAUGE 2
+  =====================================================
+  */
+  if (modelo === 'gauge2') {
 
-    let lis_valor = chart.DatoX.split(',');
-    let lis_meta = chart.NombreDatoX.split(',');
+    let lis_valor = (config.datoX || '').split(',');
+    let lis_meta = (config.nombreDatoX || '').split(',');
 
-    let row = data[0];
+    const row = data[0];
 
     let ch_valor = 0;
     let ch_display = 0;
@@ -245,10 +288,12 @@ function renderEcharts(container, chart, data) {
         color = 'green';
         ch_barra = 100;
       }
+
       if (parseFloat(ch_valor) >= parseFloat(lis_meta[2])) {
         color = 'yellow';
         ch_barra = 50;
       }
+
       if (parseFloat(ch_valor) >= parseFloat(lis_meta[3])) {
         color = 'red';
         ch_barra = 10;
@@ -264,10 +309,12 @@ function renderEcharts(container, chart, data) {
         color = 'red';
         ch_barra = 10;
       }
+
       if (parseFloat(ch_valor) >= parseFloat(lis_meta[2])) {
         color = 'yellow';
         ch_barra = 50;
       }
+
       if (parseFloat(ch_valor) >= parseFloat(lis_meta[3])) {
         color = 'green';
         ch_barra = 100;
@@ -279,55 +326,72 @@ function renderEcharts(container, chart, data) {
         <span class="info-box-icon">
           <i class="fa fa-fw fa-tachometer-alt"></i>
         </span>
+
         <div class="info-box-content">
-          <span class="info-box-text">${chart.Titulo}</span>
+          <span class="info-box-text">${chart.titulo}</span>
           <span class="info-box-number">${ch_display}</span>
+
           <div class="progress">
             <div class="progress-bar" style="width: ${ch_barra}%"></div>
           </div>
-          <span class="progress-description">${ch_meta_display}</span>
+
+          <span class="progress-description">
+            ${ch_meta_display}
+          </span>
         </div>
       </div>
     `;
+
+    return;
   }
 }
 
 
 function renderTabla(container, chart, data) {
   const div = document.createElement('div');
-  div.className = chart.HtmlClass || 'col-md-12';
+  div.className = chart.htmlClass || 'col-md-12';
 
-  const columnas = chart.DatoX.split(',');
+  const config = chart.configuracion || {};
+  const columnas = (config.datoX || '').split(',');
 
   let html = `
     <div class="card shadow mb-4">
       <div class="card-header">
-        <h6 class="m-0 font-weight-bold text-primary">${chart.Titulo}</h6>
+        <h6 class="m-0 font-weight-bold text-primary">
+          ${chart.titulo}
+        </h6>
       </div>
+
       <div class="card-body">
         <div style="overflow-x:auto;">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
   `;
 
   columnas.forEach(col => {
     html += `<th>${col}</th>`;
   });
 
-  html += `</tr></thead><tbody>`;
+  html += `
+              </tr>
+            </thead>
+            <tbody>
+  `;
 
   data.forEach(row => {
     html += '<tr>';
+
     columnas.forEach(col => {
       html += `<td>${row[col] ?? ''}</td>`;
     });
+
     html += '</tr>';
   });
 
   html += `
-          </tbody>
-        </table>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -335,4 +399,87 @@ function renderTabla(container, chart, data) {
 
   div.innerHTML = html;
   container.appendChild(div);
+}
+
+
+function renderCalendario(container, chart, data) {
+  const div = document.createElement('div');
+  div.className = chart.htmlClass || 'col-md-12';
+
+  const calendarId = 'calendar_' + chart.id;
+  const config = chart.configuracion || {};
+
+  div.innerHTML = `
+    <div class="card shadow mb-4">
+      <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+          ${chart.titulo}
+        </h6>
+      </div>
+
+      <div class="card-body">
+        <div id="${calendarId}"></div>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+
+  const calendarEl = document.getElementById(calendarId);
+
+  if (!calendarEl) return;
+
+  // =====================================================
+  //  Construcción de eventos
+  // =====================================================
+  const events = data.map(row => {
+    const titulo = row[config.campoTitulo] || 'Sin título';
+    const fecha = row[config.campoFecha];
+    const recordId = row[config.campoId];
+    const modulo = row[config.campoModulo];
+
+    // URL generada: /module/{modulo}/view/{id}/
+    let url = '#';
+    if (modulo && recordId) {
+      url = `/module/${modulo}/view/${recordId}/`;
+    }
+
+    return {
+      title: titulo,
+      start: fecha,
+      url: url,
+
+      extendedProps: {
+        modulo: modulo,
+        recordId: recordId
+      }
+    };
+  });
+
+  // =====================================================
+  //  Inicialización del calendario
+  // =====================================================
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'es',
+    height: 'auto',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+
+    events: events,
+
+    // Abrir en nueva pestaña
+    eventClick: function (info) {
+      info.jsEvent.preventDefault();
+
+      if (info.event.url && info.event.url !== '#') {
+        window.open(info.event.url, '_blank');
+      }
+    }
+  });
+
+  calendar.render();
 }

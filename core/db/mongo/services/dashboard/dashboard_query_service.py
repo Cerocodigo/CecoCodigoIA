@@ -45,7 +45,7 @@ class DashboardQueryService:
         dashboards = list(
             collection.find(
                 {
-                    "Activo": True,
+                    "activo": True,
                 }
             )
         )
@@ -69,7 +69,7 @@ class DashboardQueryService:
         dashboard = collection.find_one(
             {
                 "_id": dashboard_id,
-                "Activo": True,
+                "activo": True,
             }
         )
 

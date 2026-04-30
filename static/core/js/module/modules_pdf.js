@@ -41,14 +41,21 @@ function obtener_valores_cabecera() {
         container.querySelectorAll("input, select, textarea").forEach(el => {
             if (!el.name) return;
 
-            if (el.type === "checkbox") data[el.name] = el.checked;
+            if (el.type === "checkbox") {
+                data[el.name] = el.checked;
+            }
             else if (el.type === "radio") {
-                if (el.checked) data[el.name] = el.value;
-            } else data[el.name] = el.value;
+                if (el.checked) {
+                    data[el.name] = el.value;
+                }
+            }
+            else {
+                data[el.name] = el.value;
+            }
         });
     });
 
-    return [data];
+    return data;
 }
 
 function obtener_valores_detalle() {
@@ -94,7 +101,7 @@ function generar_pdf_registro(data) {
     const pagina = plantilla.pagina;
     const segs = plantilla.segmentos;
 
-    const cab = data.valores_cab[0];
+    const cab = data.valores_cab;
     const det = data.valores_det;
 
     const ancho = parseFloat(pagina.ancho);
@@ -126,70 +133,88 @@ function generar_pdf_registro(data) {
     if (Array.isArray(segs.detalle)) {
 
         segs.detalle.forEach(seg => {
+            console.log("------------------------------------------");
+            console.log("Procesando segmento detalle para tabla:", seg.tabla);
+            console.log("------------------------------------------");
 
-            const registros = det[seg.modelo_id];
+            const registros = det[seg.tabla];
             if (!registros) return;
 
             y += parseFloat(seg.alturaInicial || 0);
 
+            // =====================================
+            // CABECERAS DE COLUMNAS
+            // =====================================
+
             doc.setFont(undefined, "bold");
+
             seg.columnas.forEach(col => {
-                if (col.tipo === "Derecha") {
-                    doc.text(parseFloat(col.x), y, col.cabecera, { align: "right" });
-                }
-                else if (col.tipo === "Centro") {
-                        let x = parseFloat(col.x);
-                        let w = parseFloat(col.largoMaximo || 0);
-                        doc.text(x + (w / 2), y, col.cabecera, { align: "center" });
-                }
-                else {
-                    doc.text(parseFloat(col.x), y, col.cabecera);
-                }
+
+                const x = parseFloat(col.x);
+                const align = (col.orientacion || "izquierda") === "derecha"
+                    ? "right"
+                    : "left";
+
+                doc.text(col.cabecera || "", x, y, { align });
             });
 
             doc.setFont(undefined, "normal");
             y += 0.5;
 
-            registros.forEach((row, i) => {
+            // =====================================
+            // FILAS
+            // =====================================
+
+            registros.forEach(row => {
 
                 let alturaFila = 0.5;
 
                 seg.columnas.forEach(col => {
-                    let valor = devolver_valor_imp(row[col.campo], col.tipo, col.ext);
+
+                    const valor = devolver_valor_imp(
+                        row[col.campo],
+                        col.tipo,
+                        col.formato
+                    );
+
+                    const x = parseFloat(col.x);
                     doc.setFontSize(parseFloat(col.tamano || 8));
-                    let x = parseFloat(col.x);
+
                     if (col.tipo === "Imagen") {
-                        let img = document.getElementById(`preview_${col.campo}`);
+
+                        const img = document.getElementById(`preview_${col.campo}`);
+
                         if (img && img.src) {
-                            let base64 = getBase64ImagePdf(img);
-                            let w = parseFloat(col.largoMaximo || 1);
-                            let h = parseFloat(col.filasMaximas || 1);
+                            const base64 = getBase64ImagePdf(img);
+
+                            const w = parseFloat(col.largoMaximo || 1);
+                            const h = parseFloat(col.filasMaximas || 1);
+
                             doc.addImage(base64, "PNG", x, y, w, h);
                             alturaFila = Math.max(alturaFila, h);
                         }
                     }
                     else {
+
                         const lines = obtenerLineasTexto(
                             doc,
                             valor,
                             col.largoMaximo,
-                            null // 🔥 detalle NO limita filas (por ahora)
+                            null
                         );
-                        if (col.tipo === "Derecha") {
-                            doc.text(lines, x, y, { align: "right" });
-                        }
-                        else if (col.tipo === "Centro") {
-                            let w = parseFloat(col.largoMaximo || 0);
-                            doc.text(lines, x + (w / 2), y, { align: "center" });
-                        }
-                        else {
-                            doc.text(lines, x, y);
-                        }
+
+                        const align = (col.orientacion || "izquierda") === "derecha"
+                            ? "right"
+                            : "left";
+
+                        doc.text(lines, x, y, { align });
+
                         const alturaTexto = calcularAlturaTexto(
                             doc,
                             lines,
                             parseFloat(col.tamano || 8)
                         );
+
                         alturaFila = Math.max(alturaFila, alturaTexto);
                     }
                 });
@@ -237,6 +262,10 @@ function renderSegmento(doc, seg, cab, baseY) {
 
     let maxY = baseY;
 
+    // ======================================================
+    // ETIQUETAS
+    // ======================================================
+
     (seg.etiquetas || []).forEach(e => {
 
         let x = parseFloat(e.x);
@@ -244,35 +273,20 @@ function renderSegmento(doc, seg, cab, baseY) {
 
         maxY = Math.max(maxY, y);
 
-        if (e.tipo === "Logo") {
-            const logo = document.getElementById("company-logo");
+        doc.setFontSize(parseFloat(e.tamano || 10));
 
-            // ✅ Solo usar si realmente cargó
-            if (logo && logo.dataset.logoLoaded === "true") {
-                const base64 = getBase64ImagePdf(logo);
-                if (base64) {
-                    let [w, h] = e.tamano.split(",").map(parseFloat);
-                    doc.addImage(base64, "PNG", x, y, w, h);
-                }
-            } else {
-                // ❌ No hay logo usable → puedes ignorar o usar fallback
-                console.warn("Logo no disponible o no cargado");
-            }
+        const align = (e.orientacion || "izquierda") === "derecha"
+            ? "right"
+            : "left";
 
-
-
-        }
-
-        else {
-            doc.setFontSize(parseFloat(e.tamano || 10));
-            doc.text(x, y, e.valor);
-        }
+        doc.text(e.valor || "", x, y, { align });
     });
+
     // ======================================================
-    // GRAFICOS (nuevo esquema separado de etiquetas)
+    // GRAFICOS
     // ======================================================
 
-    (seg.grafico || []).forEach(g => {
+    (seg.graficos || []).forEach(g => {
 
         let x = parseFloat(g.x);
         let y = baseY + parseFloat(g.y);
@@ -282,55 +296,63 @@ function renderSegmento(doc, seg, cab, baseY) {
 
         maxY = Math.max(maxY, y + alto);
 
-        let [r, gColor, b] = (g.rgb || "0,0,0")
-            .split(",")
-            .map(v => parseFloat(v));
+        if (g.tipo === "logo") {
 
-        doc.setFillColor(r, gColor, b);
+            const logo = document.getElementById("company-logo");
 
-        if (g.tipo === "cuadrado") {
-            doc.rect(x, y, ancho, alto, "F");
+            if (logo && logo.dataset.logoLoaded === "true") {
+                const base64 = getBase64ImagePdf(logo);
+                if (base64) {
+                    doc.addImage(base64, "PNG", x, y, ancho, alto);
+                }
+            } else {
+                console.warn("Logo no disponible o no cargado");
+            }
         }
-        else if (g.tipo === "cuadrado_cir") {
-            doc.roundedRect(x, y, ancho, alto, 0.3, 0.3, "FD");
-        }
+        else {
 
-        doc.setFillColor(0, 0, 0);
+            let [r, gColor, b] = (g.rgb || "0,0,0")
+                .split(",")
+                .map(v => parseFloat(v));
+
+            doc.setFillColor(r, gColor, b);
+
+            if (g.tipo === "cuadrado") {
+                doc.rect(x, y, ancho, alto, "F");
+            }
+            else if (g.tipo === "cuadrado_cir") {
+                doc.roundedRect(x, y, ancho, alto, 0.3, 0.3, "FD");
+            }
+
+            doc.setFillColor(0, 0, 0);
+        }
     });
 
+    // ======================================================
+    // CAMPOS
+    // ======================================================
 
     (seg.campos || []).forEach(c => {
 
-        let valor = devolver_valor_imp(cab[c.campo], c.tipo, c.ext);
+        let valor = devolver_valor_imp(cab[c.campo], c.tipo, c.formato);
 
         let x = parseFloat(c.x);
         let y = baseY + parseFloat(c.y);
 
         doc.setFontSize(parseFloat(c.tamano || 10));
 
-        if (c.tipo === "Color") {
-            let [r, g, b, size] = c.ext.split(",");
-            doc.setTextColor(r, g, b);
-            doc.setFontSize(size);
-            doc.text(x, y, valor);
-            doc.setTextColor(0, 0, 0);
+        if (c.tipo === "Imagen") {
+
+            let img = document.getElementById(`preview_${c.campo}`);
+            if (img && img.src) {
+                let base64 = getBase64ImagePdf(img);
+                let w = parseFloat(c.largoMaximo || 1);
+                let h = parseFloat(c.filasMaximas || 1);
+                doc.addImage(base64, "PNG", x, y, w, h);
+
+                maxY = Math.max(maxY, y + h);
+            }
         }
-
-        else if (c.tipo === "Barras") {
-            let svg = document.createElement("svg");
-            JsBarcode(svg, valor);
-
-            let canvas = document.createElement("canvas");
-            canvg(canvas, svg.outerHTML);
-
-            let img = canvas.toDataURL("image/png");
-
-            // let [w, h] = c.limite.split(",");
-            let w = parseFloat(c.largoMaximo || 3);
-            let h = parseFloat(c.filasMaximas || 1);
-            doc.addImage(img, "PNG", x, y, w, h);
-        }
-
         else {
             const lines = obtenerLineasTexto(
                 doc,
@@ -339,19 +361,13 @@ function renderSegmento(doc, seg, cab, baseY) {
                 c.filasMaximas
             );
 
-            if (c.tipo === "Derecha") {
-                doc.text(lines, x, y, { align: "right" });
-            }
-            else if (c.tipo === "Centro") {
-                let w = parseFloat(c.largoMaximo || 0);
-                doc.text(lines, x + (w / 2), y, { align: "center" });
-            }
-            else {
-                doc.text(lines, x, y);
-            }
+            const align = (c.orientacion || "izquierda") === "derecha"
+                ? "right"
+                : "left";
 
-            // 🔥 actualizar altura real
-            const alturaTexto = lines.length * 0.4;
+            doc.text(lines, x, y, { align });
+
+            const alturaTexto = calcularAlturaTexto(doc,lines,parseFloat(c.tamano || 10));
             maxY = Math.max(maxY, y + alturaTexto);
         }
     });
@@ -363,21 +379,48 @@ function renderSegmento(doc, seg, cab, baseY) {
 // UTIL
 // ======================================================
 
+// ======================================================
+// UTIL
+// ======================================================
+
 function estimarAlturaSegmento(seg) {
     let max = 0;
 
+    // =====================================
+    // ETIQUETAS
+    // =====================================
+
     (seg.etiquetas || []).forEach(e => {
-        max = Math.max(max, parseFloat(e.y || 0));
+        max = Math.max(max,parseFloat(e.y || 0));
     });
 
-    (seg.grafico || []).forEach(g => {
+    // =====================================
+    // GRAFICOS
+    // =====================================
+
+    (seg.graficos || []).forEach(g => {
         const y = parseFloat(g.y || 0);
         const alto = parseFloat(g.alto || 0);
-        max = Math.max(max, y + alto);
+
+        max = Math.max(max,y + alto);
     });
 
+    // =====================================
+    // CAMPOS
+    // =====================================
+
     (seg.campos || []).forEach(c => {
-        max = Math.max(max, parseFloat(c.y || 0));
+
+        let y = parseFloat(c.y || 0);
+
+        // si es imagen puede ocupar más altura
+        if (c.tipo === "Imagen") {
+            let h = parseFloat(c.filasMaximas || 0);
+            max = Math.max(max, y + h);
+        }
+        else {
+            max = Math.max(max, y);
+        }
     });
 
     return max + 0.5;
@@ -387,7 +430,7 @@ function estimarAlturaSegmento(seg) {
 // UTILIDADES
 // ======================================================
 
-function devolver_valor_imp(valor, tipo, ext) {
+function devolver_valor_imp(valor, tipo, formato) {
 
     if (valor === null || valor === undefined) {
         return "";
@@ -395,9 +438,17 @@ function devolver_valor_imp(valor, tipo, ext) {
 
     switch (tipo) {
 
-        case "Fecha":
+        // ======================================================
+        // FECHA
+        // ======================================================
+
+        case "Fecha": {
 
             const date = new Date(valor);
+
+            if (isNaN(date.getTime())) {
+                return valor.toString();
+            }
 
             const d = String(date.getDate()).padStart(2, "0");
             const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -408,11 +459,16 @@ function devolver_valor_imp(valor, tipo, ext) {
                 "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
             ];
 
-            switch (ext) {
+            switch (formato) {
 
-                case "Dia": return d;
-                case "Mes": return m;
-                case "Anio": return y;
+                case "Dia":
+                    return d;
+
+                case "Mes":
+                    return m;
+
+                case "Anio":
+                    return y.toString();
 
                 case "DDMMAAAA":
                     return `${d}${m}${y}`;
@@ -429,19 +485,25 @@ function devolver_valor_imp(valor, tipo, ext) {
                 case "LetrasMayusculas":
                     return `${y} ${meses[m - 1].toUpperCase()} ${d}`;
 
+                case "Normal":
                 default:
                     return `${d}/${m}/${y}`;
             }
+        }
 
+        // ======================================================
+        // NUMERO
+        // ======================================================
 
-        case "Numero":
-        case "Derecha":
+        case "Numero": {
 
             const num = parseFloat(valor);
 
-            if (isNaN(num)) return valor.toString();
+            if (isNaN(num)) {
+                return valor.toString();
+            }
 
-            switch (ext) {
+            switch (formato) {
 
                 case "Miles":
                     return num.toLocaleString("es-ES");
@@ -458,10 +520,34 @@ function devolver_valor_imp(valor, tipo, ext) {
                 case "Porcentaje_full":
                     return num + "%";
 
+                case "Numero":
                 default:
                     return num.toString();
             }
+        }
 
+        // ======================================================
+        // CEROS FIJOS
+        // ======================================================
+
+        case "CerosFijos": {
+
+            const texto = valor.toString().trim();
+            const minDigitos = parseInt(formato || 0);
+
+            if (!minDigitos || isNaN(minDigitos)) {
+                return texto;
+            }
+
+            return texto.padStart(minDigitos, "0");
+        }
+
+        // ======================================================
+        // TEXTO / IMAGEN / DEFAULT
+        // ======================================================
+
+        case "Texto":
+        case "Imagen":
         default:
             return valor.toString();
     }
@@ -507,7 +593,7 @@ function getBase64ImagePdf(img, maxWH = 480, opacity = 1) {
         return dataURL;
     }
     catch (error) {
-        return 0
+        return 0;
     }
 }
 
@@ -580,9 +666,9 @@ function calcularAlturaTexto(doc, lines, fontSize) {
     return lines.length * alturaLinea;
 }
 
-
-// Función para generar un nombre de archivo dinámico basado en un formato definido, utilizando valores de cabecera y metadata
+// Función para generar un nombre de archivo dinámco basado en pagina.formatNombre (nuevo esquema array)
 function generarNombreArchivo(pagina, cab, metadata) {
+
     const format = pagina.formatNombre;
     const now = new Date();
 
@@ -593,26 +679,54 @@ function generarNombreArchivo(pagina, cab, metadata) {
     };
 
     let nombre = "documento";
-    if (!format || format === "No") {
+
+    // ======================================================
+    // SIN FORMATO DEFINIDO
+    // ======================================================
+
+    if (
+        !format ||
+        format === "No" ||
+        (Array.isArray(format) && format.length === 0)
+    ) {
         const base = cab["Descripcion"] || metadata.nombre || "documento";
         nombre = `${base}_${getFechaHora()}`;
     }
+
+    // ======================================================
+    // NUEVO FORMATO ARRAY
+    // ======================================================
+
     else {
-        const campos = format.toString().split(",");
+
+        // Seguridad por compatibilidad:
+        // si aún llega string viejo, lo convertimos
+        const campos = Array.isArray(format)
+            ? format
+            : format.toString().split(",");
+
         let valores = [];
 
         campos.forEach(campo => {
             const val = cab[campo];
-            if (val !== undefined && val !== null && val !== "") {
+
+            if (
+                val !== undefined &&
+                val !== null &&
+                val !== ""
+            ) {
                 valores.push(val.toString());
             }
         });
+
         const base = cab["Descripcion"] || metadata.nombre || "documento";
+
         if (valores.length) {
             nombre = `${base}_${valores.join("_")}`;
         } else {
             nombre = `${base}_${getFechaHora()}`;
         }
     }
+
     return nombre.replace(/[\/\\:*?"<>|]/g, "_");
 }
