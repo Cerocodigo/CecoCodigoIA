@@ -23,6 +23,10 @@ from core.views.reports.execute_report_view import execute_report_view
 
 from core.views.dashboards.dashboard_charts_view import dashboards_charts_view
 
+from core.views.dashboards.plantillas_modelos_prehechos_view import listar_modelos_prehechos_view
+
+from core.views.dashboards.iniciar_ia_view import iniciar_ia_view
+
 app_name = "core"
 
 urlpatterns = [
@@ -72,5 +76,9 @@ urlpatterns = [
 
     # Dashboard - Charts API
     path("dashboards/api/charts/", dashboards_charts_view, name="dashboards_charts_api"),
+
+    # Dashboard - Plantillas y modelos prehechos
+    path("dashboards/api/modelos-prehechos/", listar_modelos_prehechos_view, name="listar_modelos_prehechos_api"),
+    path("dashboard/iniciar-ia/", iniciar_ia_view, name="iniciar_ia"),
     
 ]

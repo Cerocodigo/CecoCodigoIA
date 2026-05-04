@@ -32,3 +32,135 @@
 .bg-green { background: #00a65a; color:#fff; }
 .bg-yellow { background: #f39c12; color:#fff; }
 .bg-red { background: #dd4b39; color:#fff; }
+
+
+/* Contenedor general */
+.onboarding-card {
+  border-radius: 12px;
+}
+
+/* Cards internas */
+.option-card {
+  border-radius: 12px;
+  border: 1px solid #e3e6f0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.option-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* Card activa (IA) */
+.option-active {
+  border: 2px solid #4e73df;
+  background: #f8f9ff;
+}
+
+
+/* Botones más redondeados estilo moderno */
+.rounded-btn {
+  border-radius: 25px;
+}
+
+.option-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 65px;
+}
+
+/* Colores estilo moderno */
+.icon-ai {
+  margin-top: 30px;
+  background: #e8f0ff;
+  color: #4e73df;
+}
+
+.icon-template {
+  margin-top: 30px;
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.icon-restore {
+  margin-top: 30px;
+  background: #e6f7ee;
+  color: #1cc88a;
+}
+
+.templates-scroll-container {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 20px;
+}
+
+/* CARD */
+.template-card {
+  min-width: 240px;
+  max-width: 240px;
+  height: 300px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
+  transition: transform 0.2s ease;
+}
+
+.template-card:hover {
+  transform: translateY(-5px);
+}
+
+/* ICONO GRANDE */
+.template-icon {
+  font-size: 48px; 
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* CONTENIDO FLEXIBLE */
+.template-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TÍTULO */
+.template-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #282828;
+}
+
+/* DESCRIPCIÓN CONTROLADA */
+.template-desc {
+  font-size: 0.85rem;
+  color: #6c757d;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 5; /* Limita a 3 líneas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* SCROLL MÁS LIMPIO */
+.templates-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.templates-scroll-container::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 10px;
+}

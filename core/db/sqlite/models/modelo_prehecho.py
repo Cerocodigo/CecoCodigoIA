@@ -7,7 +7,7 @@ class ModeloPrehecho(models.Model):
     categoria = models.CharField(max_length=100, blank=True)
     activo = models.BooleanField(default=True)
 
-    icono = models.CharField(max_length=50, blank=True)  # emoji o icono
+    icono = models.CharField(max_length=50, blank=True)  # emoji o icono o url de img
 
     created_at = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)

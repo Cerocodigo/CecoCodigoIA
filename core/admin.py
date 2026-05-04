@@ -189,6 +189,7 @@ class ModeloPrehechoJsonsAdmin(admin.ModelAdmin):
         "tipo",
         "json",
         "prompt_config",
+        "data_inicial",
         "activo",
         "created_at",
     )
