@@ -14,7 +14,7 @@ class ModeloPrehechoJsons(models.Model):
             ("modulo", "Módulo"),
             ("modelo", "Modelo (DB)"),
             ("dashboard", "Dashboard"),
-            ("pdf", "PDF"),
+            ("plantillas_pdf", "Plantilla PDF"),
             ("reporte", "Reporte"),
         ]
     )
@@ -22,7 +22,8 @@ class ModeloPrehechoJsons(models.Model):
     json = models.JSONField()
     # opcional: prompt separado
     prompt_config = models.JSONField(blank=True, null=True)
+    data_inicial = models.JSONField(blank=True, null=True, default=None)
     activo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return self.nombre
+        return f"{self.modelo.nombre} - {self.tipo}"

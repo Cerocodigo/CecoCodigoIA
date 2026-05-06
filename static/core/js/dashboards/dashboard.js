@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+  if (!window.APP || !window.APP.hasModules) {
+    return;
+  }
+
   cargarDashboardCharts();
 });
 
@@ -483,3 +488,109 @@ function renderCalendario(container, chart, data) {
 
   calendar.render();
 }
+
+
+//* Función para visualizar modal de plantillas desde el dashboard
+function mostrarModalPlantillas() {
+    // Cargar contenido del carrusel de plantillas
+  let templateCarouselContainer = document.getElementById('templateCarouselContainer');
+  templateCarouselContainer.innerHTML = `
+  <div class="text-center">
+  <div class="spinner-border text-primary" role="status">
+  <span class="sr-only">Cargando...</span>
+  </div>
+  <p>Cargando plantillas...</p>
+  </div>
+  `;
+  
+  $('#templateCarouselModal').modal('show');
+
+  fetch("/dashboards/api/modelos-prehechos/")
+    .then(res => res.json())
+    .then(data => {
+      renderCarruselPlantillas(data.modelos);
+    })
+    .catch(err => {
+      container.innerHTML = `<p class="text-danger">Error cargando plantillas</p>`;
+      console.error(err);
+    });
+}
+
+function renderCarruselPlantillas(modelos) {
+  const container = document.getElementById('templateCarouselContainer');
+
+  if (!modelos.length) {
+    container.innerHTML = `<p class="text-center">No hay plantillas disponibles</p>`;
+    return;
+  }
+
+  let items = modelos.map(m => {
+    return `
+      <div class="template-card">
+
+        <div class="template-icon">
+          ${renderIcono(m.icono)}
+        </div>
+
+        <div class="template-content">
+          <h6 class="template-title">${m.nombre}</h6>
+          <p class="template-desc">
+            ${m.descripcion || ''}
+          </p>
+        </div>
+
+        <button class="btn btn-primary btn-sm w-100 mt-auto"
+          onclick="aplicarModelo(${m.id})">
+          Usar
+        </button>
+
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="templates-scroll-container">
+      ${items}
+    </div>
+  `;
+}
+
+function renderIcono(icono) {
+  if (!icono) return "📦";
+
+  // =========================
+  // IMAGEN (simplificado)
+  // =========================
+  if (icono.startsWith("img:")) {
+    const fileName = icono.replace("img:", "");
+
+    return `
+      <img 
+        src="/static/core/img/modelos_prehechos/${fileName}" 
+        style="width:64px;height:64px;object-fit:contain;"
+      />
+    `;
+  }
+
+  // =========================
+  // ICONO CSS
+  // =========================
+  if (icono.includes("bi ") || icono.includes("fa ")) {
+    return `<i class="${icono}"></i>`;
+  }
+
+  // =========================
+  // EMOJI
+  // =========================
+  return icono;
+}
+
+
+function aplicarModelo(id) {
+  alert("Aplicar modelo ID: " + id);
+
+  // luego aquí:
+  // POST → backend → ejecutar jsons → sync → mysql
+}
+
+

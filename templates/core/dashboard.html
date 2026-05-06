@@ -4,22 +4,121 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block topbar_title %}
-    <h4 class="mb-0 text-gray-800">
-        Dashboard
-    </h4>
+<h4 class="mb-0 text-gray-800">
+    Dashboard
+</h4>
 {% endblock %}
 
 {% block content %}
 <!-- Content Row -->
 <div class="container-fluid">
+    <!-- Sección si no hay módulos creados -->
+     {% if not has_modules %}
+    <div class="card shadow mb-4 border-0 onboarding-card">
+        <div class="card-body p-4">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h3 class="font-weight-bold mb-1" style="color: black;">Crea tu sistema en 1 minuto</h3>
+                <p class="text-muted mb-0">
+                    Elige cómo quieres empezar. Puedes cambiar o editar todo después.
+                </p>
+            </div>
+
+            <!-- Opciones -->
+            <div class="row">
+
+                <!-- IA -->
+                <div class="col-md-6">
+                    <div class="card option-card option-active h-100">
+                        <div class="card-body text-center">
+
+                            <div class="badge badge-primary mb-2" style="position:absolute; left:5%">⭐ Recomendado</div>
+
+                            <div class="option-icon icon-ai">
+                                <i class="bi bi-robot"></i>
+                            </div>
+
+                            <h5 class="font-weight-bold mt-2 text-dark">Crear con IA</h5>
+
+                            <p class="text-dark small" style="height: 15%;">
+                                Describe tu negocio y generamos tu sistema automáticamente.
+                            </p>
+
+                            <a href="{% url 'core:iniciar_ia' %}" class="btn btn-primary btn-block rounded-btn">
+                                Empezar con IA
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PLANTILLA -->
+                <div class="col-md-6">
+                    <div class="card option-card h-100">
+                        <div class="card-body text-center">
+
+                            <div class="option-icon icon-template">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+
+                            <h5 class="font-weight-bold mt-2 text-dark">Usar plantilla</h5>
+
+                            <p class="text-dark small" style="height: 15%;">
+                                Sistemas listos para contabilidad, ventas y más.
+                            </p>
+
+                            <button class="btn btn-outline-secondary btn-block rounded-btn" onclick="mostrarModalPlantillas()">
+                                Ver plantillas
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4 text-dark small">
+                ✔ Seguro, rápido y 100% editable después
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+    {% if has_modules %}
     <div class="row" id="dashboard-charts-container"></div>
+    {% endif %}
 
 </div>
 
 <!-- End Content Row -->
+<!-- Modal Carrusel de plantillas -->
+<div class="modal fade" id="templateCarouselModal" tabindex="-1" role="dialog" aria-labelledby="templateCarouselModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="templateCarouselModalLabel">Plantillas disponibles</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="templateCarouselContainer">
+                <!-- Carrusel de plantillas -->
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    window.APP = {
+        hasModules: {{ has_modules|yesno:"true,false" }}
+    };
+</script>
 <script src="{% static 'core/js/dashboards/dashboard.js' %}"></script>
 {% endblock %}

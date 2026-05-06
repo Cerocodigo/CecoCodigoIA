@@ -33,7 +33,7 @@ def dashboard_view(request):
     # =========================
     modulos = ModuleQueryService.get_active_modules(company)
 
-
+    has_modules = len(modulos) > 0
 
 
     # =========================
@@ -42,6 +42,7 @@ def dashboard_view(request):
     context = {
         "modulos": modulos,
         "pending_join_requests": pending_join_requests,
+        "has_modules": has_modules,
     }
 
     return render(request, "core/dashboard.html", context)
