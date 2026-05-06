@@ -10,6 +10,7 @@ from core.views.company_join_requests import (approve_join_request,reject_join_r
 from core.views.modules.create_module_view import (create_module_view)
 from core.views.modules.module_main_view import (module_main_view)
 from core.views.modules.module_view_reg_view import (module_view_reg_view, module_delete_reg_view)
+from core.views.modules.module_edit_ia import (module_edit_ia_main, module_edit_ia_requerimientos)
 
 from core.views.modules.module_new_reg_view import (module_new_reg_view, calculosReferenciaBuscador, calculosNumeroSecuencial, calculosQueryBaseDatos)
 from core.views.modules.archivos_view import (subir_archivo)
@@ -38,9 +39,12 @@ urlpatterns = [
     path("company/join-request/<int:request_id>/reject/",reject_join_request,name="reject_join_request"),
 
     # Módulo
-    path("module/create/",create_module_view,name="create_module"),
+    path("module/<slug:module_id>/edit/ia/chat-requerimientos/", module_edit_ia_requerimientos, name="module_edit_ia_requerimientos"),
+    path("module/<slug:module_id>/edit/ia/", module_edit_ia_main, name="module_edit_ia_main"),
     path("module/<slug:module_id>/main/", module_main_view, name="module_main"),
     path("module/<slug:module_id>/new/", module_new_reg_view, name="module_new_reg"),
+    path("module/create/",create_module_view,name="create_module"),
+
 
     path("calculosNumeroSecuencial/<str:modelo>/<str:campo>/",calculosNumeroSecuencial, name="calculosNumeroSecuencial"), ##calculosCampos 
     path("calculosNumeroSecuencial/<str:modelo>/<str:campo>/<str:fila>/",calculosNumeroSecuencial, name="calculosNumeroSecuencial"), ##calculosCampos 
@@ -63,7 +67,6 @@ urlpatterns = [
 
 
     # Reportes Dinámicos
-    
     path("reports/<str:report_id>/main/",reports_main_view,name="report_main"),
     path("reports/api/execute/<str:report_id>/", execute_report_view, name="api_execute_report"),
 
@@ -73,4 +76,7 @@ urlpatterns = [
     # Dashboard - Charts API
     path("dashboards/api/charts/", dashboards_charts_view, name="dashboards_charts_api"),
     
+
+    
+
 ]

@@ -23,7 +23,7 @@ from core.services.modules.update_model_mysql_schema_service import (
 )
 
 
-@require_POST
+#@require_POST
 def sync_module_schema_view(request, module_id: str):
     """
     Endpoint de validación + sincronización de esquema por módulo.

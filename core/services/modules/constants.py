@@ -72,6 +72,10 @@ FIELD_DEFAULTS = {
 }
 
 AREAS_ROL = {
+    "maestro": {
+        "areas_validas": ["Main-Arriba", "Side-Arriba", "Main-Abajo", "Side-Abajo"],
+        "area_default": "Main-Arriba",
+    },
     "cabecera": {
         "areas_validas": ["Main-Arriba", "Side-Arriba", "Main-Abajo", "Side-Abajo"],
         "area_default": "Main-Arriba",
@@ -191,7 +195,7 @@ SQL_TYPE_META = {
         "sql": "CHAR(1)",
     },
     "text": {
-        "default": "",
+        "default": " ",
         "cast": str,
         "sql": "TEXT",
     },
@@ -230,12 +234,12 @@ SQL_TYPE_META = {
     },
 
     "date": {
-        "default": "1970-01-01",
+        "default": "1900-01-01",
         "cast": str,
         "sql": "DATE",
     },
     "datetime": {
-        "default": "1970-01-01 00:00:00",
+        "default": "1900-01-01 00:00:00",
         "cast": str,
         "sql": "DATETIME",
     },
