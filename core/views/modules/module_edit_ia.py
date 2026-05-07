@@ -17,13 +17,17 @@ from core.db.sqlite.models.user_company import UserCompany
 from core.db.mongo.services.modules.module_query_service import (ModuleQueryService,)
 from core.db.mongo.services.models.model_query_service import (ModelQueryService,)
 
+from core.db.mongo.services.dashboard.dashboard_query_service import (DashboardQueryService,)
+from core.db.mongo.services.reports.report_query_service import (ReportQueryService,)
+from core.db.mongo.services.pdf_templates.pdf_template_query_service import (PDFQueryService,)
+
+
 from core.db.mysql.services.connection_service import (MySQLCompanyConnectionService,)
 from core.db.mysql.executor import MySQLExecutor
 from core.db.mysql.services.dml_service import MySQLDMLService
 
 from core.services.modules.build_dynamic_form_service import (build_dynamic_form,)
 
-from core.services.modules.build_dynamic_form_service import (build_dynamic_form,)
 
 from core.services.ai.modulos_openia_client import (AIService)
 
@@ -235,7 +239,6 @@ def module_edit_ia_requerimientos(request, module_id: str):
                         entidades=accion["data"].get("entidades", [])
                     )
 
-
                 if accion["accion"] == "modificar":
                     update_module = ModuleQueryService.update_module(
                         company=company,
@@ -289,10 +292,24 @@ def module_edit_ia_requerimientos(request, module_id: str):
 
             if accion["fuente"] == "dashboard":
                 if accion["accion"] == "crear":
+                    DashboardQueryService.create_dashboard(
+                        company=company,
+                        module_id=accion["data"]["module_id"],
+                        nombre=accion["data"]["nombre"],
+                    )
                     pass
+
                 if accion["accion"] == "modificar":
-                    pass
+                    DashboardQueryService.modifiar(
+                        company=company,
+                        module_id=accion["data"]["module_id"],
+                        nombre=accion["data"]["nombre"],
+                    )
                 if accion["accion"] == "eliminar":
+                    DashboardQueryService.delete_dashboard(
+                        company=company,
+                        module_id=accion["data"]["module_id"]
+                    )
                     pass
             
 
