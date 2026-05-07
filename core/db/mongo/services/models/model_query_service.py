@@ -3,6 +3,7 @@
 # Servicio de lectura de modelos desde MongoDB
 # Colección: modelos
 # ====================================================
+from array import array
 from datetime import datetime
 from django.utils.text import slugify
 
@@ -61,34 +62,38 @@ class ModelQueryService:
                 model["id"] = str(model["_id"])
 
         return models
-    
-    # Obsoleta
-    # def get_models_byId(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
-    #     """
-    #     Devuelve todos los modelos activos
-    #     asociados a un módulo.
 
-    #     Ej:
-    #     module_id = "clientes"
-    #     """
 
-    #     collection = ModelQueryService.get_collection(company)
 
-    #     models = list(
-    #         collection.find(
-    #             {
-    #                 "_id": module_id,
-    #                 "activo": True,
-    #             }
-    #         )
-    #     )
+    @staticmethod
+    def get_models_for_module_rol_cabecera_maestro(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
+        """
+        Devuelve todos los modelos activos
+        asociados a un módulo y un rol específico.
 
-    #     # Normalizamos _id a string
-    #     if not is_raw:
-    #         for model in models:
-    #             model["id"] = str(model["_id"])
+        Ej:
+        module_id = "clientes"
+        module_rol = "cabecera"
+        """
 
-    #     return models
+        collection = ModelQueryService.get_collection(company)
+
+        models = list(
+            collection.find(
+                {
+                    "modulo": module_id,
+                    "rol": {"$in": ["cabecera", "maestro"]},
+                    "activo": True,
+                }
+            )
+        )
+
+        # Normalizamos _id a string
+        if not is_raw:
+            for model in models:
+                model["id"] = str(model["_id"])
+
+        return models
 
     @staticmethod
     def get_models_for_module_rol(*, company, module_id: str, module_rol: str, is_raw: bool = False) -> list[dict]:
@@ -139,6 +144,22 @@ class ModelQueryService:
             model["id"] = str(model["_id"])
 
         return model
+
+    @staticmethod
+    def get_models_actives_all(*, company, is_raw: bool = False) -> array | None:
+        """
+        Obtiene todos los modelos activos.
+        """    
+        collection = ModelQueryService.get_collection(company)
+
+        models = collection.find({
+            "activo": True
+        })
+
+        if not is_raw:
+            models = list(models)
+
+        return models
     
     @staticmethod
     def create_model(*,company,module_id: str,nombre: str | None = None,) -> dict:
@@ -184,13 +205,16 @@ class ModelQueryService:
             "display": nombre or module_id.capitalize().replace("_", " "),
             "rol": "cabecera",
             "pk": "Secuencial",
-            "campos": [pk_field],
+            "campos": [],
             "modulo": module_id,
         }
 
         collection.insert_one(document)
 
         return document
+    
+
+
 
     @staticmethod
     def replace_model(*, company, old_model_id: str, new_model: dict):

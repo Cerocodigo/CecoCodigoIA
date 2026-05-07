@@ -1,0 +1,146 @@
+
+estructur de los modelos
+{
+  "_id": "clientes", // Identificador único del modelo (slug): minúsculas, números y "_" (ej: clientes, facturas_detalle)
+  "activo": true, // Booleano: indica si e modelo está habilitado en el sistema
+  "tabla": "clientes", // Nombre físico de la tabla en MySQL (debe coincidir con la BD)
+  "display": "RazonSocial",   // Campo usado como representación principal en la UI (listados, selects, búsquedas)
+  "rol": "maestro", 
+  // Tipo de modelo:
+  // "maestro" = entidad principal independiente (clientes, productos)
+  // "cabecera" = encabezado de gitransacción (facturas, pedidos)
+  // "detalle" = líneas dependientes de una cabecera (detalle_factura)
+  "pk": "ClienteId",   // Primary Key del modelo (obligatorio, único, no null)
+  "fk": "",   // Foreign Key principal (obligatorio en "detalle", opcional en "maestro", referencia a la cabecera)
+  "campos": [],   // Lista de definición de campos del modelo (estructura sugerida abajo)
+  "modulo": "clientes"   // Relación al módulo (debe coincidir con modulos._id)
+}
+
+Estructura campo:
+{
+"visible": true,
+"nombre": "Campo",
+"etiqueta": "Etiqueta",
+"requerido": true,
+"tipo_base": "",
+"tipo_funcional": "",
+"configuracion": {},
+"orden": 0,
+"col": 6,
+"area": "Main-Arriba|Main-Abajo|Side-Arriba|Side-Abajo",
+"valor_default": "",
+"placeholder": "",
+"ayuda": "",
+"break": true,
+"gap": 0,
+"gap_top": 0
+}
+
+Compatibilidad tipo_funcional → tipo_base:
+{
+"TextoSimple": ["string","char","text"],
+"NumeroSimple": ["int","integer","decimal","decimal4","decimal6"],
+"NumeroSecuencial": ["int","integer","pk","fk"],
+"SistemaFecha": ["date","datetime"],
+"SistemaUsuario": ["string"],
+"OpcionMultiple": ["string"],
+"Referencia": ["fk","int","integer","string"],
+"ReferenciaBuscador": ["fk","int","integer","string"],
+"ReferenciaAdjunto": ["string","decimal","decimal4","decimal6"],
+"QueryBaseDatos": ["string","decimal","decimal4","decimal6"],
+"Operacion": ["decimal","decimal4","decimal6"],
+"FormatoTexto": ["string"],
+"Condicional": ["string"],
+"Archivo": ["string"],
+"FormulaDetalle": ["decimal","decimal4","decimal6","int","integer"],
+"FechaRegistro": ["date","datetime"],
+"LlaveExterna": ["int","fk"]
+}
+
+Configuración (usar EXACTAMENTE estas claves):
+
+"TextoSimple":{
+"unico": "Si",
+"editable": "Si",
+"valor_predeterminado": ""
+},
+"NumeroSimple":{
+"min": 0,
+"max": 0
+},
+"NumeroSecuencial":{
+"inicio": 1,
+"incremento": 1
+},
+"SistemaFecha": {},
+"SistemaUsuario":{
+"modo": "Usuario Actual"
+},
+"OpcionMultiple":{
+"opciones": [],
+"labels": {},
+"valor_predeterminado": ""
+},
+"Referencia":{
+"sql": "",
+"label_field": "",
+"value_field": "",
+"campo_principal": "",
+"valor_inicial": ""
+},
+"ReferenciaBuscador":{
+"sql": "",
+"value_field": "",
+"label_field": "",
+"valor_inicial": "",
+"ModuloIngresoRapido": "",
+"campos_filtrables": []
+},
+"ReferenciaAdjunto":{
+"referencia": "",
+"campo_origen": "",
+"editable": "Si"
+},
+"QueryBaseDatos":{
+"query": {
+"sql": "",
+"default": ""
+},
+"parametros": ""
+},
+"Operacion":{
+"formula": ""
+},
+"FormatoTexto":{
+"template": "",
+"padding": {}
+},
+"Condicional":{
+"condicional": []
+},
+"Archivo":{
+"acepta_archivo": "cualquiera",
+"tamano_max_mb": 10
+},
+"FormulaDetalle":{
+"operacion": "SUM",
+"campo": "",
+"tabla": "",
+"condicion": []
+},
+"FechaRegistro":{
+"editable": "No"
+},
+"LlaveExterna":{
+"entidad": "",
+"campo": ""
+}
+
+Reglas:
+
+NO agregar ni eliminar claves
+fk obligatorio si rol="detalle"
+tipo_base DEBE ser válido según tipo_funcional
+valor_default != null
+
+Salida: SOLO JSON válido.

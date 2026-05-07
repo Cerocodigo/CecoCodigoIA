@@ -62,7 +62,7 @@ class ModuleQueryService:
         return module
 
     @staticmethod
-    def create_module(company, nombre, descripcion="", uso="medio"):
+    def create_module(company, nombre, descripcion="", uso="medio", entidades=[]):
         """
         Crea un nuevo módulo en la colección 'modulos'
         """
@@ -76,13 +76,16 @@ class ModuleQueryService:
         if collection.find_one({"_id": module_id}):
             raise ValueError("Ya existe un módulo con ese nombre")
 
+        ### ia interpreta el decricpción como instrucciones para configurar el módulo, por eso lo hacemos obligatorio y no permitimos que sea vacío
+
+        
         document = {
             "_id": module_id,
             "nombre": nombre,
             "descripcion": descripcion,
             "uso": uso,
             "activo": True,
-            "entidades": [nombre],
+            "entidades": entidades,
             "creado_en": datetime.utcnow(),
             "prompt_config": {
                 "enabled": True,
@@ -98,3 +101,117 @@ class ModuleQueryService:
 
         return document
 
+    @staticmethod
+    def update_module(company, module_id, nombre=None, descripcion=None, uso=None, activo=None, entidades=None):
+        """
+        Modifica un módulo existente en la colección 'modulos'
+        """
+
+        collection = ModuleQueryService.get_collection(company)
+
+        module = collection.find_one({"_id": module_id})
+        if not module:
+            raise ValueError("El módulo no existe")
+
+        update_fields = {}
+
+        # Si se cambia el nombre, actualizamos también entidades
+        if nombre and nombre != module.get("nombre"):
+            new_module_id = slugify(nombre).replace("-", "_")
+
+            # Validar que no exista otro con ese ID
+            if collection.find_one({"_id": new_module_id}):
+                raise ValueError("Ya existe un módulo con ese nombre")
+
+            update_fields["nombre"] = nombre
+            update_fields["entidades"] = entidades
+
+            # IMPORTANTE: cambiar _id implica crear nuevo doc y borrar el anterior
+            new_document = {**module, **update_fields}
+            new_document["_id"] = new_module_id
+
+            collection.insert_one(new_document)
+            collection.delete_one({"_id": module_id})
+
+            return new_document
+
+        # Campos normales
+        if descripcion is not None:
+            if descripcion.strip() == "":
+                raise ValueError("La descripción no puede estar vacía")
+            update_fields["descripcion"] = descripcion
+
+        if uso is not None:
+            update_fields["uso"] = uso
+
+        if activo is not None:
+            update_fields["activo"] = activo
+
+        if not update_fields:
+            return module  # no hay cambios
+
+        collection.update_one(
+            {"_id": module_id},
+            {"$set": update_fields}
+        )
+
+        return collection.find_one({"_id": module_id})
+
+
+
+    @staticmethod
+    def update_module_entidades(company, module_id, entidades):
+        """
+        Actualiza únicamente el campo 'entidades' de un módulo
+        """
+
+        collection = ModuleQueryService.get_collection(company)
+
+        module = collection.find_one({"_id": module_id})
+        if not module:
+            raise ValueError("El módulo no existe")
+
+        # Validación
+        if not isinstance(entidades, list) or not entidades:
+            raise ValueError("entidades debe ser una lista no vacía")
+
+        # Limpieza (recomendado)
+        entidades_limpias = list({
+            str(e).strip()
+            for e in entidades
+            if str(e).strip()
+        })
+
+        if not entidades_limpias:
+            raise ValueError("entidades no contiene valores válidos")
+
+        # Update
+        collection.update_one(
+            {"_id": module_id},
+            {"$set": {"entidades": entidades_limpias}}
+        )
+
+        return collection.find_one({"_id": module_id})
+    
+
+    @staticmethod
+    def delete_module(company, module_id):
+        """
+        Elimina un módulo de la colección 'modulos'
+        """
+
+        collection = ModuleQueryService.get_collection(company)
+
+        module = collection.find_one({"_id": module_id})
+        if not module:
+            raise ValueError("El módulo no existe")
+
+        result = collection.delete_one({"_id": module_id})
+
+        if result.deleted_count == 0:
+            raise RuntimeError("No se pudo eliminar el módulo")
+
+        return {
+            "deleted": True,
+            "module_id": module_id
+        }

@@ -6,6 +6,7 @@
 import json
 
 from core.services.ai.openai_client import OpenAIClient
+
 from core.services.reports.report_metadata_service import (
     ReportMetadataService,
 )
