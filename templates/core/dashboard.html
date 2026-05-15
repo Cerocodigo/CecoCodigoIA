@@ -116,9 +116,9 @@
 
 {% block extra_js %}
 <script>
-    window.APP = {
-        hasModules: {{ has_modules|yesno:"true,false" }}
-    };
+    window.APP = window.APP || {};
+
+    window.APP.hasModules = {{ has_modules|yesno:"true,false" }};
 </script>
 <script src="{% static 'core/js/dashboards/dashboard.js' %}"></script>
 {% endblock %}

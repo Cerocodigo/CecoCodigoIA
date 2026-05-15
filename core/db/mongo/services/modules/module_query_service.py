@@ -98,3 +98,98 @@ class ModuleQueryService:
 
         return document
 
+    # =========================
+    # Update module
+    # =========================
+    @staticmethod
+    def update_module(
+        *,
+        company,
+        module_id: str,
+        update_data: dict,
+    ):
+        """
+        Actualiza parcialmente un módulo.
+        """
+
+        collection = ModuleQueryService.get_collection(
+            company
+        )
+
+        result = collection.update_one(
+            {
+                "_id": module_id,
+            },
+            {
+                "$set": update_data,
+            },
+        )
+
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+        }
+
+    # =========================
+    # Delete module
+    # =========================
+    @staticmethod
+    def delete_module(
+        *,
+        company,
+        module_id: str,
+    ):
+        """
+        Elimina un módulo.
+        """
+
+        collection = ModuleQueryService.get_collection(
+            company
+        )
+
+        result = collection.delete_one(
+            {
+                "_id": module_id,
+            }
+        )
+
+        return {
+            "deleted_count": result.deleted_count,
+        }
+
+    # =========================
+    # Upsert module
+    # =========================
+    @staticmethod
+    def upsert_module(
+        *,
+        company,
+        document: dict,
+    ):
+        """
+        Inserta o reemplaza módulo
+        usando _id como clave natural.
+        """
+
+        if "_id" not in document:
+            raise ValueError(
+                "document debe contener _id"
+            )
+
+        collection = ModuleQueryService.get_collection(
+            company
+        )
+
+        result = collection.replace_one(
+            {
+                "_id": document["_id"]
+            },
+            document,
+            upsert=True,
+        )
+
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+            "upserted_id": result.upserted_id,
+        }

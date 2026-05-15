@@ -31,10 +31,7 @@ class CompanyStorageService:
     @staticmethod
     def create_company_directories(company_uid: str) -> dict:
         """
-        Crea la estructura completa de carpetas
-        asociadas a una empresa.
-
-        Retorna un diccionario con las rutas creadas.
+        Crea estructura completa de carpetas empresa.
         """
 
         base_path = CompanyStorageService.get_company_base_path(company_uid)
@@ -44,9 +41,12 @@ class CompanyStorageService:
             "logo": os.path.join(base_path, "logo"),
             "firma": os.path.join(base_path, "firma"),
             "docs": os.path.join(base_path, "docs"),
+            "metadata": os.path.join(base_path, "metadata"),
         }
 
-        # Crear todas las carpetas necesarias
+        # =========================
+        # Crear carpetas
+        # =========================
         for path in paths.values():
             os.makedirs(path, exist_ok=True)
 

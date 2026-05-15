@@ -12,6 +12,7 @@ from core.db.sqlite.models.mysql_server import MySQLServer
 from core.db.sqlite.models.password_reset_token import PasswordResetToken
 from core.db.sqlite.models.modelo_prehecho import ModeloPrehecho
 from core.db.sqlite.models.modelo_prehecho_jsons import ModeloPrehechoJsons
+from core.db.sqlite.models.modelo_prehecho_ejecutar import ModeloPrehechoEjecutar
 
 
 # =========================
@@ -189,10 +190,27 @@ class ModeloPrehechoJsonsAdmin(admin.ModelAdmin):
         "tipo",
         "json",
         "prompt_config",
-        "data_inicial",
         "activo",
         "created_at",
     )
     list_filter = ("tipo", "activo")
     search_fields = ("modelo__nombre", "descripcion")
+    ordering = ("-created_at",)
+
+
+# =========================
+# Modelo Prehecho Ejecutar
+# =========================
+@admin.register(ModeloPrehechoEjecutar)
+class ModeloPrehechoEjecutarAdmin(admin.ModelAdmin):
+    list_display = (
+        "modelo",
+        "descripcion",
+        "data_variables_mongo",
+        "data_inicial_mysql",
+        "activo",
+        "created_at",
+    )
+    search_fields = ("modelo__nombre", "descripcion")
+    list_filter = ("activo",)
     ordering = ("-created_at",)

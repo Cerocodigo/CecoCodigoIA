@@ -35,6 +35,31 @@ class ModelQueryService:
         return db["modelos"]
 
     @staticmethod
+    def get_models_for_company(*, company, is_raw: bool = False) -> list[dict]:
+        """
+        Devuelve todos los modelos activos
+        de la empresa.
+        """
+
+        collection = ModelQueryService.get_collection(company)
+
+        models = list(
+            collection.find(
+                {
+                    "activo": True,
+                }
+            )
+        )
+
+        # Normalizamos _id a string
+        if not is_raw:
+            for model in models:
+                model["id"] = str(model["_id"])
+
+        return models
+
+
+    @staticmethod
     def get_models_for_module(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
         """
         Devuelve todos los modelos activos
@@ -62,33 +87,6 @@ class ModelQueryService:
 
         return models
     
-    # Obsoleta
-    # def get_models_byId(*, company, module_id: str, is_raw: bool = False) -> list[dict]:
-    #     """
-    #     Devuelve todos los modelos activos
-    #     asociados a un módulo.
-
-    #     Ej:
-    #     module_id = "clientes"
-    #     """
-
-    #     collection = ModelQueryService.get_collection(company)
-
-    #     models = list(
-    #         collection.find(
-    #             {
-    #                 "_id": module_id,
-    #                 "activo": True,
-    #             }
-    #         )
-    #     )
-
-    #     # Normalizamos _id a string
-    #     if not is_raw:
-    #         for model in models:
-    #             model["id"] = str(model["_id"])
-
-    #     return models
 
     @staticmethod
     def get_models_for_module_rol(*, company, module_id: str, module_rol: str, is_raw: bool = False) -> list[dict]:
@@ -238,4 +236,101 @@ class ModelQueryService:
             "old_id": old_model_id,
             "new_id": new_model["_id"],
             "replaced": True,
+        }
+
+
+    # =========================
+    # Update model
+    # =========================
+    @staticmethod
+    def update_model(
+        *,
+        company,
+        model_id: str,
+        update_data: dict,
+    ):
+        """
+        Actualiza parcialmente un modelo.
+        """
+
+        collection = ModelQueryService.get_collection(
+            company
+        )
+
+        result = collection.update_one(
+            {
+                "_id": model_id,
+            },
+            {
+                "$set": update_data,
+            },
+        )
+
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+        }
+
+    # =========================
+    # Delete model
+    # =========================
+    @staticmethod
+    def delete_model(
+        *,
+        company,
+        model_id: str,
+    ):
+        """
+        Elimina un modelo.
+        """
+
+        collection = ModelQueryService.get_collection(
+            company
+        )
+
+        result = collection.delete_one(
+            {
+                "_id": model_id,
+            }
+        )
+
+        return {
+            "deleted_count": result.deleted_count,
+        }
+
+    # =========================
+    # Upsert model
+    # =========================
+    @staticmethod
+    def upsert_model(
+        *,
+        company,
+        document: dict,
+    ):
+        """
+        Inserta o reemplaza modelo
+        usando _id como clave natural.
+        """
+
+        if "_id" not in document:
+            raise ValueError(
+                "document debe contener _id"
+            )
+
+        collection = ModelQueryService.get_collection(
+            company
+        )
+
+        result = collection.replace_one(
+            {
+                "_id": document["_id"]
+            },
+            document,
+            upsert=True,
+        )
+
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+            "upserted_id": result.upserted_id,
         }

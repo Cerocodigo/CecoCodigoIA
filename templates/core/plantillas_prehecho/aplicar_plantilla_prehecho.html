@@ -1,0 +1,214 @@
+{% extends "core/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+Aplicar Plantilla Prehecha
+{% endblock %}
+
+{% block topbar_title %}
+<h4 class="mb-0 text-gray-800">
+    Aplicar plantilla: {{ plantilla.nombre }}
+</h4>
+{% endblock %}
+
+{% block sidebar %}
+{% include "core/partials/sidebar_plantilla_prehecho.html" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+    <!-- Sidebar pasos -->
+    <div class="col-md-3">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header">
+                <h5 class="mb-0">
+                    Proceso
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <ul class="list-group" id="wizard-steps">
+
+                    <li class="list-group-item active" data-step="analysis">
+                        1. Análisis
+                    </li>
+
+                    <li class="list-group-item" data-step="metadata">
+                        2. Metadata
+                    </li>
+
+                    <li class="list-group-item" data-step="application">
+                        3. Aplicación
+                    </li>
+
+                    <li class="list-group-item" data-step="finish">
+                        4. Finalización
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="col-md-9">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header">
+                <h5 class="mb-0" id="content-title">
+                    Análisis de impacto
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <!-- ========================= -->
+                <!-- Advertencia -->
+                <!-- ========================= -->
+                <div id="warning-container" class="alert alert-warning">
+
+                    <h5 class="alert-heading">
+                        Advertencia importante
+                    </h5>
+
+                    <p>
+                        Aplicar una plantilla prehecha eliminará estructuras y datos existentes que no coincidan con la
+                        plantilla seleccionada, e instalará las nuevas estructuras definidas en la plantilla. Los
+                        procesos que no formen parte de la plantilla serán eliminados.
+                    </p>
+
+                    <hr>
+
+                    <p class="mb-0">
+                        En caso de continuar es importante recordar que esta acción es irreversible y en caso de ser
+                        interrumpida puede provocar inconsistencias que afecten el funcionamiento de la plataforma.
+                    </p>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- Contenido análisis -->
+                <!-- ========================= -->
+                <div id="analysis-container">
+
+                    <div class="text-center py-5">
+
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+
+                        <p class="text-muted mb-0">
+                            Analizando estructura actual...
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- Metadata dinámica -->
+                <!-- ========================= -->
+                <div id="metadata-container" class="d-none">
+                </div>
+
+                <!-- ========================= -->
+                <!-- Aplicación -->
+                <!-- ========================= -->
+                <div id="application-container" class="d-none" >
+                    <div class="text-center py-5">
+                        <div
+                            class="spinner-border text-primary mb-4"
+                            role="status"
+                        ></div>
+                        <h5 id="application-status-title">
+                            Preparando aplicación...
+                        </h5>
+
+                        <p class="text-muted mb-4" id="application-status-description">
+                            Inicializando proceso...
+                        </p>
+
+                        <div class="progress mb-4">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="application-progress-bar" role="progressbar" style="width: 0%;" >
+                                0%
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 bg-light text-left" style=" max-height: 250px; overflow-y: auto;" id="application-log-container">
+                            <div class="text-muted">
+                                Esperando inicio...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ========================= -->
+                <!-- Opciones -->
+                <!-- ========================= -->
+                <div id="strategy-container" class="d-none">
+
+                    <div class="mb-4">
+
+                        <label class="font-weight-bold d-block mb-3">
+                            Estrategia de aplicación
+                        </label>
+
+                        <div class="custom-control custom-radio mb-3">
+
+                            <input type="radio" id="strategy_keep" name="apply_strategy" class="custom-control-input"
+                                value="keep" checked>
+
+                            <label class="custom-control-label" for="strategy_keep">
+                                Mantener datos compatibles de los procesos que se alineen con la plantilla.
+                            </label>
+
+                        </div>
+
+                        <div class="custom-control custom-radio">
+
+                            <input type="radio" id="strategy_clean" name="apply_strategy" class="custom-control-input"
+                                value="clean">
+
+                            <label class="custom-control-label" for="strategy_clean">
+                                Eliminar todos los datos y realizar una instalación limpia.
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- Acciones -->
+                <!-- ========================= -->
+                <div class="d-flex justify-content-end">
+
+                    <a href="/dashboard/" class="btn btn-secondary mr-2">
+                        Cancelar
+                    </a>
+
+                    <button class="btn btn-primary" id="btnContinuar" disabled>
+                        Continuar
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/plantillas_prehecho/aplicar_plantilla_prehecho.js' %}"></script>
+{% endblock %}

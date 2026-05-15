@@ -539,10 +539,9 @@ function renderCarruselPlantillas(modelos) {
           </p>
         </div>
 
-        <button class="btn btn-primary btn-sm w-100 mt-auto"
-          onclick="aplicarModelo(${m.id})">
-          Usar
-        </button>
+        <a class="btn btn-primary btn-sm w-100 mt-auto"  href="/aplicar-prehecho/${m.id}/" >
+          Aplicar plantilla
+        </a>
 
       </div>
     `;
@@ -586,11 +585,5 @@ function renderIcono(icono) {
 }
 
 
-function aplicarModelo(id) {
-  alert("Aplicar modelo ID: " + id);
-
-  // luego aquí:
-  // POST → backend → ejecutar jsons → sync → mysql
-}
 
 

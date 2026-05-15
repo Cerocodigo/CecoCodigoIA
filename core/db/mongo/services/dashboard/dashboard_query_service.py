@@ -124,3 +124,62 @@ class DashboardQueryService:
     #     collection.insert_one(document)
 
     #     return document
+
+    # =========================
+    # Update dashboard
+    # =========================
+    @staticmethod
+    def update_dashboard(
+        *,
+        company,
+        dashboard_id: str,
+        update_data: dict,
+    ):
+        """
+        Actualiza campos de un dashboard.
+        """
+
+        collection = DashboardQueryService.get_collection(
+            company
+        )
+
+        result = collection.update_one(
+            {
+                "_id": dashboard_id,
+            },
+            {
+                "$set": update_data,
+            },
+        )
+
+        return {
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+        }
+
+    # =========================
+    # Delete dashboard
+    # =========================
+    @staticmethod
+    def delete_dashboard(
+        *,
+        company,
+        dashboard_id: str,
+    ):
+        """
+        Elimina dashboard.
+        """
+
+        collection = DashboardQueryService.get_collection(
+            company
+        )
+
+        result = collection.delete_one(
+            {
+                "_id": dashboard_id,
+            }
+        )
+
+        return {
+            "deleted_count": result.deleted_count,
+        }
