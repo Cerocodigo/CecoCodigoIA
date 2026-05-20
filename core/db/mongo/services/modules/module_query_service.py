@@ -62,7 +62,7 @@ class ModuleQueryService:
         return module
 
     @staticmethod
-    def create_module(company, nombre, descripcion="", uso="medio"):
+    def create_module(company, nombre, descripcion="", uso="medio", entidades=[]):
         """
         Crea un nuevo módulo en la colección 'modulos'
         """
@@ -76,13 +76,16 @@ class ModuleQueryService:
         if collection.find_one({"_id": module_id}):
             raise ValueError("Ya existe un módulo con ese nombre")
 
+        ### ia interpreta el decricpción como instrucciones para configurar el módulo, por eso lo hacemos obligatorio y no permitimos que sea vacío
+
+        
         document = {
             "_id": module_id,
             "nombre": nombre,
             "descripcion": descripcion,
             "uso": uso,
             "activo": True,
-            "entidades": [nombre],
+            "entidades": entidades,
             "creado_en": datetime.utcnow(),
             "prompt_config": {
                 "enabled": True,

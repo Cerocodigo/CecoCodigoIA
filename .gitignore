@@ -12,6 +12,8 @@ __pycache__/
 venv/
 venv311/
 .env
+env/
+
 
 # =========================
 # Django
@@ -34,7 +36,26 @@ db.sqlite3
 Thumbs.db
 /.conda
 
+# =========================
+# secret files
+# =========================
+llavegemini
+llavegemini.text
+
+# =========================
+# vs code
+# =========================
+.vscode/
+
 
 config\settings\base.py
 config\settings\local.py
 config\settings\produccion.py
+
+
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+staticfiles/

@@ -31,23 +31,68 @@ Consultas SQL estructuradas para explotar datos
 Visualizaciones globales (no dependen de módulos)
 
 
-INSTRUCCIÓN PRINCIPAL
-
-Dado el siguiente requerimiento:
-
-[PEGAR AQUÍ REQUERIMIENTO DEL CLIENTE]
-
 Debes generar:
 
-✔ JSON de módulo
+✔ JSON de módulo  (Procesos individuales, )
 ✔ JSON de modelos (tablas + campos)
 ✔ JSON de PDFs
 ✔ JSON de reportes (con SQL)
 ✔ JSON de dashboard
 
 
-🔷 1. JSON: MODULO
+ejemplo
+módulo = items
+modelos = items 
 
+módulo = facturación
+modelos = facturaCabecera,  facturaDetalle
+
+módulo = clientes
+modelos = clientes 
+
+MODULARIZACIÓN DEL SISTEMA
+
+Debes separar el sistema en múltiples módulos cuando existan diferentes puntos de ingreso de información independientes.
+
+Reglas:
+
+1. Cada módulo representa un punto de ingreso independiente en la UI.
+   Ejemplo:
+   - Registro de pacientes → módulo "pacientes"
+   - Agendamiento de citas → módulo "citas"
+   - Registro de recetas → módulo "recetas"
+
+2. NO agrupar entidades en un solo módulo si:
+   - Se pueden crear de forma independiente
+   - Tienen flujos de uso distintos
+   - El usuario las percibe como acciones separadas
+
+3. NO crear módulos innecesarios:
+   - Si una entidad depende completamente de otra en el mismo flujo, debe ser modelo (no módulo)
+
+4. Clasificación obligatoria:
+   - Datos maestros → módulo independiente (pacientes, productos, clientes)
+   - Transacciones → módulo independiente (citas, ventas, pedidos)
+   - Detalles dependientes → modelo dentro del módulo (no módulo)
+   - Consultas históricas → REPORTES (no modelos de ingreso)
+
+5. Historia o evolución de datos:
+   - Si se genera desde múltiples transacciones → debe ser REPORTE
+   - No debe ser módulo independiente si no tiene ingreso directo
+
+6. Salida esperada:
+   - Debes generar múltiples JSON de módulos separados
+   - Cada módulo con sus propios modelos
+   - Los reportes deben consolidar la información entre módulos
+
+7. Está PROHIBIDO:
+   - Unificar todo en un solo módulo
+   - Crear módulos sin propósito claro de ingreso
+
+
+ejemplos de los json
+🔷 1. JSON: MODULO
+nombre collecion mongo = modulos
 Debe tener estas claves, no se puede andir ni eliminar ninguna clave:
 
   "_id": "clientes", // Identificador único del módulo (slug): solo minúsculas, números y "_" (ej: clientes, ventas_2026)
@@ -74,6 +119,7 @@ Debe tener estas claves, no se puede andir ni eliminar ninguna clave:
 
 
 2. JSON: MODELOS
+nombre collecion mongo = modelos
 
 Cada modelo representa una tabla.
 Debe tener estas claves, no se puede andir ni eliminar ninguna clave:
@@ -376,6 +422,7 @@ var_cerocodigo_configuracion:{
 
 
 3. JSON: PDF
+nombre collecion mongo = plantillas_pdf
 
 plantillas_pdf son la collecion de pdf emitibles por cada modulo
 
@@ -524,6 +571,8 @@ var_pdf_tipos_formato[var_pdf_tipos]={
 
 
 Reportes
+nombre collecion mongo = plantillas_pdf
+
 [
   {
     "_id":"libro_diario", //ID único del reporte

@@ -71,10 +71,9 @@ def module_view_reg_view(request, module_id: str, id: int):
     # =========================
    
 
-    Modelo = ModelQueryService.get_models_for_module_rol(
+    Modelo = ModelQueryService.get_models_for_module_rol_cabecera_maestro(
         company=company,
         module_id=module_id,
-        module_rol="cabecera"
     )[0]
 
     modelos_det = ModelQueryService.get_models_for_module_rol(

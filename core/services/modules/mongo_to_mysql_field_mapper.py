@@ -51,7 +51,13 @@ def mongo_field_to_sql(campo: dict) -> str:
 
     valor_default = campo.get("valor_default")
 
-    if valor_default is not None and tipo_base != "pk":
+    # ❗ TIPOS QUE NO SOPORTAN DEFAULT EN MYSQL
+    tipos_sin_default = {"text", "blob", "json"}
+    if (
+        valor_default is not None
+        and tipo_base != "pk"
+        and tipo_base not in tipos_sin_default
+    ):
         default_sql = _build_default_sql(valor_default, tipo_base)
 
     # =========================

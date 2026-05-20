@@ -72,6 +72,10 @@ FIELD_DEFAULTS = {
 }
 
 AREAS_ROL = {
+    "maestro": {
+        "areas_validas": ["Main-Arriba", "Side-Arriba", "Main-Abajo", "Side-Abajo"],
+        "area_default": "Main-Arriba",
+    },
     "cabecera": {
         "areas_validas": ["Main-Arriba", "Side-Arriba", "Main-Abajo", "Side-Abajo"],
         "area_default": "Main-Arriba",
@@ -191,7 +195,7 @@ SQL_TYPE_META = {
         "sql": "CHAR(1)",
     },
     "text": {
-        "default": "",
+        "default": " ",
         "cast": str,
         "sql": "TEXT",
     },
