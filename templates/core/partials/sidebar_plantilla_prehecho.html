@@ -1,0 +1,63 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark">
+    <!-- Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Cerocodigo<sup>ia</sup></div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <!-- Empresa activa -->
+    <div class="sidebar-heading">
+        Empresa
+    </div>
+
+    <li class="nav-item px-3 text-white small">
+        {{ current_company.nombre_comercial|default:"—" }}
+    </li>
+
+
+    <hr class="sidebar-divider">
+
+    <!-- Plantilla prehecha -->
+    <div class="sidebar-heading">
+        Plantilla
+    </div>
+    <!-- Nombre -->
+    <li class="nav-item px-3 text-white small">
+        {{ plantilla.nombre }}
+    </li>
+    <!-- Icono -->
+    <li class="nav-item px-3">
+        {% if plantilla.icono %}
+            <div class="template-big-icon">
+                {{ plantilla.icono }}
+            </div>
+        {% else %}
+            <div class="template-big-icon">
+                📦
+            </div>
+        {% endif %}
+    </li>
+
+    <hr class="sidebar-divider">
+
+    <!-- Descripción plantilla prehecha -->
+    <div class="sidebar-heading">
+        Descripción
+    </div>
+    <!-- Descripción -->
+    <li class="nav-item px-3 text-white small" style="display: -webkit-box;-webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden;">
+        {{ plantilla.descripcion|default:"Sin descripción" }}
+    </li>
+
+    
+
+    <hr class="sidebar-divider d-none d-md-block">
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>

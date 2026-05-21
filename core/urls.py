@@ -28,6 +28,12 @@ from core.views.dashboards.plantillas_modelos_prehechos_view import listar_model
 
 from core.views.dashboards.iniciar_ia_view import iniciar_ia_view
 
+from core.views.plantillas_prehecho.main_plantilla_prehecho_view import (main_plantilla_prehecho_view)
+from core.views.plantillas_prehecho.obtener_analisis_plantilla_view import (obtener_analisis_plantilla_view)
+from core.views.plantillas_prehecho.aplicar_plantilla_prehecho_view import (aplicar_plantilla_prehecho_view)
+from core.views.plantillas_prehecho.obtener_metadata_plantilla_view import (obtener_metadata_plantilla_view)
+
+
 app_name = "core"
 
 urlpatterns = [
@@ -83,6 +89,11 @@ urlpatterns = [
     # Dashboard - Plantillas y modelos prehechos
     path("dashboards/api/modelos-prehechos/", listar_modelos_prehechos_view, name="listar_modelos_prehechos_api"),
     path("dashboard/iniciar-ia/", iniciar_ia_view, name="iniciar_ia"),
+    path("aplicar-prehecho/<int:plantilla_id>/", main_plantilla_prehecho_view, name="main_plantilla_prehecho"),
+    path("aplicar-prehecho/<int:plantilla_id>/analysis/", obtener_analisis_plantilla_view, name="obtener_analisis_plantilla"),
+    path("aplicar-prehecho/<int:plantilla_id>/metadata/", obtener_metadata_plantilla_view, name="obtener_metadata_plantilla"),
+    path("aplicar-prehecho/<int:plantilla_id>/apply/", aplicar_plantilla_prehecho_view, name="aplicar_plantilla_prehecho"),
+
     
 
     
